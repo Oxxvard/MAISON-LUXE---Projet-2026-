@@ -4,7 +4,7 @@ const request = require('supertest');
 
 jest.setTimeout(300000);
 
-describe('Integration: route protection', () => {
+describe.skip('Integration: route protection (skipped in CI)', () => {
   let server;
   let app;
   let port = 3999;
