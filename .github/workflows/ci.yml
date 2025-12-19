@@ -39,10 +39,16 @@ jobs:
           npx @sentry/cli releases finalize "$RELEASE"
       - name: Wait for MongoDB
         run: |
-          for i in {1..30}; do
-            nc -z localhost 27017 && echo "Mongo ready" && exit 0 || sleep 1;
+          # Wait up to ~3 minutes for MongoDB to be ready (60 attempts x 3s)
+          for i in {1..60}; do
+            if nc -z localhost 27017; then
+              echo "Mongo ready"
+              exit 0
+            fi
+            echo "Waiting for mongo... ($i/60)"
+            sleep 3
           done
-          echo "Mongo did not start" && exit 1
+          echo "Mongo did not start after ~180s" && exit 1
       - name: Seed CI database
         run: node scripts/ci-seed.js
       - name: TypeScript check
