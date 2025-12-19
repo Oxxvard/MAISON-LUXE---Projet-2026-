@@ -27,7 +27,7 @@
 ### Sécurité & Stabilité (PHASE 1-2)
 - [x] Appliquer le middleware d'auth sur toutes les routes admin et GET sensibles
 - [x] Implémenter des wrappers withAuth/withAdminAuth
-- [ ] Tester la protection sur toutes les routes critiques (in progress — tests automatisés à ajouter)
+- [ ] Tester la protection sur toutes les routes critiques (scaffold de tests ajouté, exécution CI prévue)
 - [x] Étendre la validation Zod à toutes les routes API (routes critiques couvertes)
 - [x] Standardiser la gestion des erreurs (structure, codes)
 - [x] Intégrer Sentry pour le suivi des erreurs (server + client)
@@ -41,10 +41,10 @@
 - [ ] Implémenter l'idempotence et l'historique des webhooks
 
 ### Qualité & Tests
-- [ ] Ajouter des tests unitaires (Jest)
-- [ ] Ajouter des tests d'intégration (supertest)
+- [ ] Ajouter des tests unitaires (Jest) — smoke tests Basiques ajoutés
+- [ ] Ajouter des tests d'intégration (supertest) — scaffold + `scripts/ci-seed.js` ajouté (in progress)
 - [ ] Ajouter des tests E2E (Playwright)
-- [ ] Mettre en place CI/CD (GitHub Actions)
+- [x] Mettre en place CI/CD (GitHub Actions)
 - [ ] Couverture de code >80%
 
 ### Fonctionnalités manquantes (PHASE 3-4)
