@@ -4,7 +4,11 @@ const request = require('supertest');
 
 jest.setTimeout(300000);
 
-describe.skip('Integration: route protection (skipped in CI)', () => {
+const runIntegration = process.env.RUN_INTEGRATION === 'true';
+
+const describeIf = runIntegration ? describe : describe.skip;
+
+describeIf('Integration: route protection', () => {
   let server;
   let app;
   let port = 3999;
