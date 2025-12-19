@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import logger from '@/lib/logger';
 import { withAuth, withAdminAuth } from '@/lib/auth-middleware';
+import { withBodyValidation } from '@/lib/validation';
+import { UpdateOrderAdminSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import { authOptions } from '@/lib/auth';
@@ -39,15 +41,15 @@ export const GET = withAuth(async (
   }
 });
 
-export const PATCH = withAdminAuth(async (
+export const PATCH = withAdminAuth(withBodyValidation(UpdateOrderAdminSchema, async (
   request: NextRequest,
   _session,
+  data,
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
     const { id } = await params;
-    const body = await request.json();
 
     const order = await Order.findById(id).populate('user', 'email name');
     if (!order) {
@@ -56,22 +58,22 @@ export const PATCH = withAdminAuth(async (
 
     const prevStatus = order.status;
 
-    if (body.status) order.status = body.status;
-    if (body.trackingNumber !== undefined) order.trackingNumber = body.trackingNumber || undefined;
-    if (body.trackingCarrier !== undefined) order.trackingCarrier = body.trackingCarrier || undefined;
-    if (body.shippedAt) order.shippedAt = new Date(body.shippedAt);
-    if (body.deliveredAt) order.deliveredAt = new Date(body.deliveredAt);
-    if (body.estimatedDelivery) order.estimatedDelivery = new Date(body.estimatedDelivery);
+    if (data.status) order.status = data.status as any;
+    if (data.trackingNumber !== undefined) order.trackingNumber = (data.trackingNumber as any) || undefined;
+    if (data.trackingCarrier !== undefined) order.trackingCarrier = (data.trackingCarrier as any) || undefined;
+    if (data.shippedAt) order.shippedAt = new Date(data.shippedAt as string);
+    if (data.deliveredAt) order.deliveredAt = new Date(data.deliveredAt as string);
+    if (data.estimatedDelivery) order.estimatedDelivery = new Date(data.estimatedDelivery as string);
 
     let sendShipping = false;
     let sendDelivery = false;
 
-    if (body.status === 'shipped' && prevStatus !== 'shipped') {
+    if (data.status === 'shipped' && prevStatus !== 'shipped') {
       order.shippedAt = order.shippedAt || new Date();
       sendShipping = true;
     }
 
-    if (body.status === 'delivered' && prevStatus !== 'delivered') {
+    if (data.status === 'delivered' && prevStatus !== 'delivered') {
       order.deliveredAt = order.deliveredAt || new Date();
       sendDelivery = true;
     }
@@ -112,4 +114,4 @@ export const PATCH = withAdminAuth(async (
     logger.error('Erreur mise à jour commande:', error);
     return sendErrorResponse('INTERNALerror', error.message || 'Erreur lors de la mise à jour de la commande');
   }
-});
+}));

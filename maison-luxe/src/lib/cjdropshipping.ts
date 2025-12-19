@@ -3,6 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import logger from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
+import { logEvent } from '@/lib/events';
 
 // --- Types locaux pour réduire `any` ---
 interface CJOrderItem {
@@ -157,6 +159,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get access token');
     } catch (error) {
       logger.error('CJ API Authentication Error:', error);
+      captureException(error, { func: 'getAccessToken' });
       throw error;
     }
   }
@@ -189,6 +192,7 @@ class CJDropshippingService {
       return null;
     } catch (error) {
       logger.error('CJ Token Refresh Error:', error);
+      captureException(error, { func: 'refreshAccessToken' });
       return null;
     }
   }
@@ -240,6 +244,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to search products');
     } catch (error) {
       logger.error('CJ API Search Error:', error);
+      captureException(error, { func: 'searchProducts' });
       throw error;
     }
   }
@@ -276,6 +281,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get product details');
     } catch (error) {
       logger.error('CJ API Product Details Error:', error);
+      captureException(error, { func: 'getProductDetails', pid });
       throw error;
     }
   }
@@ -305,6 +311,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get categories');
     } catch (error) {
       logger.error('CJ API Categories Error:', error);
+      captureException(error, { func: 'getCategories' });
       throw error;
     }
   }
@@ -336,6 +343,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get product stock');
     } catch (error) {
       logger.error('CJ API Stock Error:', error);
+      captureException(error, { func: 'getProductStock', sku });
       throw error;
     }
   }
@@ -364,6 +372,7 @@ class CJDropshippingService {
       throw new Error(data.message || `Failed to get warehouse info for ${warehouseId}`);
     } catch (error) {
       logger.error('CJ API Warehouse Info Error:', error);
+      captureException(error, { func: 'getWarehouseInfo', warehouseId });
       throw error;
     }
   }
@@ -377,6 +386,7 @@ class CJDropshippingService {
       return results;
     } catch (error) {
       logger.error('CJ API Multiple Warehouses Error:', error);
+      captureException(error, { func: 'getMultipleWarehousesInfo' });
       throw error;
     }
   }
@@ -405,6 +415,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get global warehouse list');
     } catch (error) {
       logger.error('CJ API Global Warehouse List Error:', error);
+      captureException(error, { func: 'getGlobalWarehouseList' });
       throw error;
     }
   }
@@ -493,12 +504,14 @@ class CJDropshippingService {
           orderNumber: data.data.orderNumber,
           orderAmount: data.data.orderAmount,
         });
+        try { logEvent('cj.order.created', { cjOrderId: data.data.orderId, orderNumber: data.data.orderNumber, orderAmount: data.data.orderAmount }); } catch (e) {}
         return data.data;
       }
 
       throw new Error(data.message || 'Failed to create CJ order');
     } catch (error) {
       logger.error('CJ API Create Order Error:', error);
+      captureException(error, { func: 'createOrder', orderNumber: orderData.orderNumber });
       throw error;
     }
   }
@@ -534,6 +547,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get order details');
     } catch (error) {
       logger.error('CJ API Get Order Details Error:', error);
+      captureException(error, { func: 'getOrderDetails', orderId });
       throw error;
     }
   }
@@ -565,6 +579,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to confirm order');
     } catch (error) {
       logger.error('CJ API Confirm Order Error:', error);
+      captureException(error, { func: 'confirmOrder', orderId });
       throw error;
     }
   }
@@ -593,6 +608,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get balance');
     } catch (error) {
       logger.error('CJ API Get Balance Error:', error);
+      captureException(error, { func: 'getBalance' });
       throw error;
     }
   }
@@ -629,6 +645,7 @@ class CJDropshippingService {
       if (data.code === 200 && data.data) {
         // Log simplifié : nombre d'options au lieu du détail complet
         logger.info('✅ Freight calculated', { options: data.data.length });
+        try { logEvent('cj.freight.calculated', { options: data.data.length }); } catch (e) {}
         return data.data;
       }
 
@@ -641,6 +658,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to calculate freight');
     } catch (error) {
       logger.error('CJ API Calculate Freight Error:', error);
+      captureException(error, { func: 'calculateFreight' });
       throw error;
     }
   }
@@ -674,6 +692,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to get tracking info');
     } catch (error) {
       logger.error('CJ API Get Tracking Info Error:', error);
+      captureException(error, { func: 'getTrackingInfo' });
       throw error;
     }
   }
@@ -712,6 +731,7 @@ class CJDropshippingService {
       throw new Error(data.message || 'Failed to set webhooks');
     } catch (error) {
       logger.error('CJ API Set Webhook Error:', error);
+      captureException(error, { func: 'setWebhook' });
       throw error;
     }
   }

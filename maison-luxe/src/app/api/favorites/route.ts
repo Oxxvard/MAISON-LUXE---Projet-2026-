@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import logger from '@/lib/logger';
 import { withAuth } from '@/lib/auth-middleware';
+import { withBodyValidation } from '@/lib/validation';
+import { FavoritePayloadSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Product from '@/models/Product';
@@ -32,16 +34,9 @@ export const GET = withAuth(async (request: NextRequest, session) => {
   }
 });
 
-export const POST = withAuth(async (request: NextRequest, session) => {
+export const POST = withAuth(withBodyValidation(FavoritePayloadSchema, async (request: NextRequest, session, data) => {
   try {
-    const { productId } = await request.json();
-
-    if (!productId) {
-      return NextResponse.json(
-        { error: 'ID produit requis' },
-        { status: 400 }
-      );
-    }
+    const { productId } = data as { productId: string };
 
     await dbConnect();
 
@@ -87,18 +82,11 @@ export const POST = withAuth(async (request: NextRequest, session) => {
       { status: 500 }
     );
   }
-});
+}));
 
-export const DELETE = withAuth(async (request: NextRequest, session) => {
+export const DELETE = withAuth(withBodyValidation(FavoritePayloadSchema, async (request: NextRequest, session, data) => {
   try {
-    const { productId } = await request.json();
-
-    if (!productId) {
-      return NextResponse.json(
-        { error: 'ID produit requis' },
-        { status: 400 }
-      );
-    }
+    const { productId } = data as { productId: string };
 
     await dbConnect();
 
@@ -124,4 +112,4 @@ export const DELETE = withAuth(async (request: NextRequest, session) => {
       { status: 500 }
     );
   }
-});
+}));

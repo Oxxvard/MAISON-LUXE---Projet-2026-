@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createError, errorResponse } from '@/lib/errors';
 import logger from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
 
 /**
  * Type pour session sécurisée
@@ -80,6 +81,7 @@ export function withAuth<T>(
       return await handler(request, authResult.session, ctx);
     } catch (error: any) {
       logger.error('Erreur dans route protégée:', error);
+      captureException(error, { route: 'withAuth' });
       return NextResponse.json(
         errorResponse('INTERNALerror', error.message),
         { status: 500 }
@@ -107,6 +109,7 @@ export function withAdminAuth<T>(
       return await handler(request, authResult.session, ctx);
     } catch (error: any) {
       logger.error('Erreur dans route admin:', error);
+      captureException(error, { route: 'withAdminAuth' });
       return NextResponse.json(
         errorResponse('INTERNALerror', error.message),
         { status: 500 }

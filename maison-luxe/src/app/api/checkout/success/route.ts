@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from 'next/server';
 import logger from '@/lib/logger';
 import Stripe from 'stripe';
 import { withAuth } from '@/lib/auth-middleware';
+import { withBodyValidation } from '@/lib/validation';
+import { CheckoutSuccessSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import { emailService } from '@/lib/email';
@@ -10,16 +12,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-24.acacia',
 });
 
-export const POST = withAuth(async (request: NextRequest, session) => {
+export const POST = withAuth(withBodyValidation(CheckoutSuccessSchema, async (request: NextRequest, session, data) => {
   try {
-    const { sessionId } = await request.json();
-
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: 'sessionId requis' },
-        { status: 400 }
-      );
-    }
+    const { sessionId } = data as { sessionId: string };
 
     // Récupérer la session Stripe
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
@@ -111,4 +106,4 @@ export const POST = withAuth(async (request: NextRequest, session) => {
       { status: 500 }
     );
   }
-});
+}));

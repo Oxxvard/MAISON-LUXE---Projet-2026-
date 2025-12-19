@@ -4,6 +4,7 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { cjService } from '@/lib/cjdropshipping';
 import logger from '@/lib/logger';
+import { logEvent } from '@/lib/events';
 
 // Helper function to add delay between requests (rate limiting)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -83,6 +84,7 @@ export const POST = withAdminAuth(async (request, session) => {
           await product.save();
           updated++;
           logger.info(`✅ [${updated}/${products.length}] Synced "${product.name}" - Cost: ${product.costPrice}€, Shipping: ${product.shippingCost}€`);
+          try { logEvent('cj.product.synced', { productId: product._id?.toString?.(), name: product.name, cost: product.costPrice, shippingCost: product.shippingCost, index: updated }); } catch (e) {}
         }
         } catch (error: any) {
         // Logger l'erreur mais continuer avec les autres produits
@@ -99,6 +101,7 @@ export const POST = withAdminAuth(async (request, session) => {
         }
       }
     }
+    try { logEvent('cj.sync.completed', { updated, skipped, errors, total: products.length }); } catch (e) {}
 
     return NextResponse.json({
       success: true,

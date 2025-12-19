@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+// Initialize client-side Sentry (if configured)
+import '../../sentry.client.config';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SessionProvider from "@/components/SessionProvider";

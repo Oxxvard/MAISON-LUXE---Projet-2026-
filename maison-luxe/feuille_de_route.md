@@ -1,6 +1,6 @@
 # 🗺️ FEUILLE DE ROUTE MAISON LUXE - 2025/2026
 
-**Date de mise à jour :** 18 décembre 2025
+**Date de mise à jour :** 19 décembre 2025
 
 ---
 
@@ -25,14 +25,14 @@
 ## 🟡 Ce qu'il reste à faire (priorités et tâches)
 
 ### Sécurité & Stabilité (PHASE 1-2)
-- [ ] Appliquer le middleware d'auth sur toutes les routes admin et GET sensibles
-- [ ] Implémenter des wrappers withAuth/withAdminAuth
-- [ ] Tester la protection sur toutes les routes critiques
-- [ ] Étendre la validation Zod à toutes les routes API
-- [ ] Standardiser la gestion des erreurs (structure, codes)
-- [ ] Intégrer Sentry pour le suivi des erreurs
-- [ ] Centraliser le logging (Winston/Pino)
-- [ ] Logger les événements importants (imports CJ, paiements, etc.)
+- [x] Appliquer le middleware d'auth sur toutes les routes admin et GET sensibles
+- [x] Implémenter des wrappers withAuth/withAdminAuth
+- [ ] Tester la protection sur toutes les routes critiques (in progress — tests automatisés à ajouter)
+- [x] Étendre la validation Zod à toutes les routes API (routes critiques couvertes)
+- [x] Standardiser la gestion des erreurs (structure, codes)
+- [x] Intégrer Sentry pour le suivi des erreurs (server + client)
+- [x] Centraliser le logging (Pino)
+- [x] Logger les événements importants (imports CJ, paiements, etc.) — instrumentation complète; schéma d'événements normalisé et appliqué
 
 ### Paiement & Webhooks
 - [ ] Vérifier la signature Stripe avec la clé secrète (tests réels)

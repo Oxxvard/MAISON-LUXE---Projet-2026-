@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/auth-middleware';
+import { withBodyValidation } from '@/lib/validation';
+import { UpdateCategorySchema } from '@/lib/schemas';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/models/Category';
 
@@ -18,22 +20,22 @@ export async function GET(
   }
 }
 
-export const PUT = withAdminAuth(async (
+export const PUT = withAdminAuth(withBodyValidation(UpdateCategorySchema, async (
   request: NextRequest,
   _session,
+  data,
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
     const { id } = await params;
-    const body = await request.json();
-    const updated = await Category.findByIdAndUpdate(id, body, { new: true });
+    const updated = await Category.findByIdAndUpdate(id, data, { new: true });
     if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(updated);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Erreur serveur' }, { status: 500 });
   }
-});
+}));
 
 export const DELETE = withAdminAuth(async (
   _request: NextRequest,

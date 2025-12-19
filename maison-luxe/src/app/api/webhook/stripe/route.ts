@@ -7,6 +7,7 @@ import { emailService } from '@/lib/email';
 import { sendErrorResponse, sendCustomError } from '@/lib/errors';
 import crypto from 'crypto';
 import logger from '@/lib/logger';
+import { logEvent, logErrorEvent } from '@/lib/events';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-24.acacia',
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
     // Vérifier la signature
     if (!signature) {
       logger.error('❌ Webhook Stripe: signature manquante');
+      try { logErrorEvent('payment.webhook.missing_signature', new Error('missing signature')); } catch (e) {}
       return sendErrorResponse('INVALID_WEBHOOK_SIGNATURE', 'Signature webhook manquante');
     }
 
@@ -63,11 +65,13 @@ export async function POST(request: Request) {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err: any) {
       logger.error('❌ Erreur vérification webhook Stripe:', err.message);
+      try { logErrorEvent('payment.webhook.invalid_signature', err, { signature: Boolean(signature) }); } catch (e) {}
       return sendErrorResponse('INVALID_WEBHOOK_SIGNATURE', 'Signature webhook invalide');
     }
 
     // Log du webhook reçu (utile pour debugging)
     logger.info(`📩 Webhook Stripe reçu: ${event.type} (ID: ${event.id})`);
+    try { logEvent('payment.webhook.received', { type: event.type, id: event.id }); } catch (e) {}
 
     // Gérer l'événement
     if (event.type === 'checkout.session.completed') {
@@ -81,6 +85,7 @@ export async function POST(request: Request) {
 
       if (!order) {
         logger.error('Order not found for session:', session.id);
+        try { logErrorEvent('payment.order.not_found', new Error('order not found'), { sessionId: session.id }); } catch (e) {}
         return NextResponse.json({ received: true });
       }
 
@@ -104,6 +109,7 @@ export async function POST(request: Request) {
       }
 
       logger.info('💳 Payment received for order:', order._id);
+      try { logEvent('payment.received', { orderId: order._id.toString(), amount: order.totalAmount }); } catch (e) {}
 
       // ============ CRÉER COMMANDE CJ AUTOMATIQUEMENT ============
       try {
@@ -190,6 +196,7 @@ export async function POST(request: Request) {
                 cjOrderId: cjOrder.orderId,
                 localOrderId: order._id,
               });
+              try { logEvent('cj.order.created_from_payment', { localOrderId: order._id.toString(), cjOrderId: cjOrder.orderId }); } catch (e) {}
             } else {
               logger.warn('⚠️ CJ createOrder returned unexpected shape', cjOrder);
             }
@@ -199,6 +206,7 @@ export async function POST(request: Request) {
         }
       } catch (cjError: any) {
         logger.error('❌ Failed to create CJ order:', cjError.message);
+        try { logErrorEvent('cj.order.create_failed', cjError, { orderId: order._id.toString() }); } catch (e) {}
         // Continuer même si la création CJ échoue
         order.cjOrderError = cjError.message;
       }
@@ -229,11 +237,14 @@ export async function POST(request: Request) {
           order.emailSent = true;
           await order.save();
           logger.info('✅ Email de confirmation envoyé');
+          try { logEvent('email.order_confirmation.sent', { orderId: order._id.toString(), user: (order.user as any).email }); } catch (e) {}
         }
       } catch (emailError: any) {
         logger.error('❌ Erreur envoi email confirmation:', emailError.message);
+        try { logErrorEvent('email.order_confirmation.failed', emailError, { orderId: order._id.toString() }); } catch (e) {}
         // Ne pas bloquer le webhook si l'email échoue
       }
+      try { logEvent('payment.webhook.processed', { orderId: order._id.toString(), eventId: event.id }); } catch (e) {}
     }
 
     return NextResponse.json({ received: true });

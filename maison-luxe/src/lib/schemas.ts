@@ -223,6 +223,14 @@ export const CreateCategorySchema = z.object({
 export const UpdateCategorySchema = CreateCategorySchema.partial();
 
 // ============================================
+// FAVORITES
+// ============================================
+
+export const FavoritePayloadSchema = z.object({
+  productId: z.string().min(1, 'ID produit requis'),
+});
+
+// ============================================
 // AVIS/REVIEWS
 // ============================================
 
@@ -350,3 +358,51 @@ export type CreateReviewInput = z.infer<typeof CreateReviewSchema>;
 export type UpdateReviewInput = z.infer<typeof UpdateReviewSchema>;
 export type CJImportProductInput = z.infer<typeof CJImportProductSchema>;
 export type PaginationInput = z.infer<typeof PaginationSchema>;
+export type FavoritePayloadInput = z.infer<typeof FavoritePayloadSchema>;
+
+// ============================================
+// ADMIN ORDER UPDATE
+// ============================================
+
+export const UpdateOrderAdminSchema = z.object({
+  status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
+  trackingNumber: z.string().optional(),
+  trackingCarrier: z.string().optional(),
+  shippedAt: z.string().optional(),
+  deliveredAt: z.string().optional(),
+  estimatedDelivery: z.string().optional(),
+});
+
+export type UpdateOrderAdminInput = z.infer<typeof UpdateOrderAdminSchema>;
+
+// ============================================
+// ADMIN CJ RETRY
+// ============================================
+
+export const RetryCJSchema = z.object({
+  orderId: z.string().min(1, 'Order ID requis'),
+});
+
+export type RetryCJInput = z.infer<typeof RetryCJSchema>;
+
+// ============================================
+// CHECKOUT
+// ============================================
+
+export const CheckoutSuccessSchema = z.object({
+  sessionId: z.string().min(1, 'sessionId requis'),
+});
+
+export type CheckoutSuccessInput = z.infer<typeof CheckoutSuccessSchema>;
+
+// ============================================
+// PROFILE
+// ============================================
+
+export const ProfileUpdateSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().min(6).optional(),
+});
+
+export type ProfileUpdateInput = z.infer<typeof ProfileUpdateSchema>;

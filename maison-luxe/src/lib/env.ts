@@ -41,6 +41,7 @@ export interface EnvConfig {
  * Lister les variables requises
  */
 import logger from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
 
 
 const REQUIRED_VARS = [
@@ -66,6 +67,7 @@ export function validateEnv(): EnvConfig {
   if (missing.length > 0) {
     // Log error and list missing vars via centralized logger
     logger.error('❌ Variables d\'environnement manquantes:', { missing });
+    captureException(new Error('Missing environment variables'), { missing });
     throw new Error(`Missing environment variables: ${missing.join(', ')}`);
   }
 

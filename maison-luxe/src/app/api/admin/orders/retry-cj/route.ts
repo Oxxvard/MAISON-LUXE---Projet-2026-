@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/auth-middleware';
+import { withBodyValidation } from '@/lib/validation';
+import { RetryCJSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
 import { cjService } from '@/lib/cjdropshipping';
 import logger from '@/lib/logger';
+import { logEvent } from '@/lib/events';
 import { successResponse, sendErrorResponse } from '@/lib/errors';
 
 // POST - Re-créer une commande CJ pour une commande payée qui a échoué
-export const POST = withAdminAuth(async (request, session) => {
+export const POST = withAdminAuth(withBodyValidation(RetryCJSchema, async (request, session, data) => {
   try {
-    const { orderId } = await request.json();
-
-  if (!orderId) {
-    return sendErrorResponse('MISSING_REQUIRED_FIELD', 'Order ID required');
-  }
+    const { orderId } = data as { orderId: string };
 
   await dbConnect();
 
@@ -87,6 +86,7 @@ export const POST = withAdminAuth(async (request, session) => {
     await order.save();
 
     logger.info('✅ CJ Order created successfully:', cj.orderId);
+    try { logEvent('cj.order.retried', { localOrderId: order._id.toString(), cjOrderId: cj.orderId, cjOrderNumber: cj.orderNumber }); } catch (e) {}
 
     return NextResponse.json(successResponse({ cjOrderId: cj.orderId, cjOrderNumber: cj.orderNumber, orderAmount: cj.orderAmount }));
   } catch (error: any) {
@@ -107,4 +107,4 @@ export const POST = withAdminAuth(async (request, session) => {
 
     return sendErrorResponse('INTERNALerror', error.message || 'Failed to create CJ order');
   }
-});
+}));

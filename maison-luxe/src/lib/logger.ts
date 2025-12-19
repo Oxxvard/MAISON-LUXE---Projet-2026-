@@ -1,25 +1,31 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+import pino from 'pino';
 
-const isLogLevel = (v: unknown): v is LogLevel =>
-  v === 'debug' || v === 'info' || v === 'warn' || v === 'error';
+const level = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 
-const LEVEL_ENV = process.env.LOG_LEVEL;
-const LEVEL: LogLevel = isLogLevel(LEVEL_ENV) ? LEVEL_ENV : 'info';
+const p = pino({
+  level,
+  base: { env: process.env.NODE_ENV },
+  timestamp: pino.stdTimeFunctions.isoTime
+});
 
-export function info(...args: unknown[]) {
-  if (LEVEL === 'info' || LEVEL === 'debug') console.info('[INFO]', ...args);
+function info(...args: unknown[]) {
+  if (args.length === 1 && typeof args[0] === 'string') return p.info(args[0]);
+  return p.info({ args });
 }
 
-export function debug(...args: unknown[]) {
-  if (LEVEL === 'debug') console.debug('[DEBUG]', ...args);
+function debug(...args: unknown[]) {
+  if (args.length === 1 && typeof args[0] === 'string') return p.debug(args[0]);
+  return p.debug({ args });
 }
 
-export function warn(...args: unknown[]) {
-  if (LEVEL === 'warn' || LEVEL === 'info' || LEVEL === 'debug') console.warn('[WARN]', ...args);
+function warn(...args: unknown[]) {
+  if (args.length === 1 && typeof args[0] === 'string') return p.warn(args[0]);
+  return p.warn({ args });
 }
 
-export function error(...args: unknown[]) {
-  console.error('[ERROR]', ...args);
+function error(...args: unknown[]) {
+  if (args.length === 1 && typeof args[0] === 'string') return p.error(args[0]);
+  return p.error({ args });
 }
 
 const logger = { info, debug, warn, error };

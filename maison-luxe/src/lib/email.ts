@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
 import logger from '@/lib/logger';
+import { captureException } from '@/lib/sentry';
+import { logEvent, logErrorEvent } from '@/lib/events';
 
 // Initialiser Resend avec la clé API
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -45,13 +47,17 @@ export const emailService = {
 
       if (error) {
         logger.error('❌ Erreur envoi email confirmation:', error);
+        captureException(error, { func: 'sendOrderConfirmation', orderId: orderIdStr });
+        try { logErrorEvent('email.order_confirmation.failed', error, { orderId: orderIdStr, to: order.user.email }); } catch (e) {}
         throw error;
       }
 
       logger.info('✅ Email confirmation envoyé', { id: data?.id });
+      try { logEvent('email.order_confirmation.sent', { orderId: orderIdStr, to: order.user.email, messageId: data?.id }); } catch (e) {}
       return data;
     } catch (error) {
       logger.error('❌ Erreur sendOrderConfirmation:', error);
+      captureException(error, { func: 'sendOrderConfirmation', orderId: String(order._id) });
       throw error;
     }
   },
@@ -71,13 +77,17 @@ export const emailService = {
 
       if (error) {
         logger.error('❌ Erreur envoi email expédition:', error);
+        captureException(error, { func: 'sendShippingNotification', orderId: orderIdStr });
+        try { logErrorEvent('email.shipping_notification.failed', error, { orderId: orderIdStr, to: order.user.email }); } catch (e) {}
         throw error;
       }
 
       logger.info('✅ Email expédition envoyé', { id: data?.id });
+      try { logEvent('email.shipping_notification.sent', { orderId: orderIdStr, to: order.user.email, messageId: data?.id }); } catch (e) {}
       return data;
     } catch (error) {
       logger.error('❌ Erreur sendShippingNotification:', error);
+      captureException(error, { func: 'sendShippingNotification', orderId: String(order._id) });
       throw error;
     }
   },
@@ -97,13 +107,17 @@ export const emailService = {
 
       if (error) {
         logger.error('❌ Erreur envoi email livraison:', error);
+        captureException(error, { func: 'sendDeliveryConfirmation', orderId: orderIdStr });
+        try { logErrorEvent('email.delivery_confirmation.failed', error, { orderId: orderIdStr, to: order.user.email }); } catch (e) {}
         throw error;
       }
 
       logger.info('✅ Email livraison envoyé', { id: data?.id });
+      try { logEvent('email.delivery_confirmation.sent', { orderId: orderIdStr, to: order.user.email, messageId: data?.id }); } catch (e) {}
       return data;
     } catch (error) {
       logger.error('❌ Erreur sendDeliveryConfirmation:', error);
+      captureException(error, { func: 'sendDeliveryConfirmation', orderId: String(order._id) });
       throw error;
     }
   },

@@ -58,7 +58,7 @@ export default function AdminDashboard() {
     const res = await fetch(`/api/admin/stats?period=${period}`);
     if (res.ok) {
       const data = await res.json();
-      setStats(data);
+      setStats(data?.data || data);
     }
   };
 
@@ -66,7 +66,9 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/orders?limit=5&sort=-createdAt');
     if (res.ok) {
       const data = await res.json();
-      setRecentOrders(data.orders || data);
+      // API returns standardized successResponse { success, data, timestamp }
+      const orders = Array.isArray(data) ? data : data?.data || data?.orders || [];
+      setRecentOrders(orders);
     }
   };
 
@@ -74,7 +76,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/products/low-stock?threshold=10');
     if (res.ok) {
       const data = await res.json();
-      setLowStockProducts(data);
+      setLowStockProducts(data?.data || data || []);
     }
   };
 
@@ -82,7 +84,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/products/top-selling?limit=5');
     if (res.ok) {
       const data = await res.json();
-      setTopProducts(data);
+      setTopProducts(data?.data || data || []);
     }
   };
 
@@ -90,7 +92,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/reviews/recent?limit=5');
     if (res.ok) {
       const data = await res.json();
-      setRecentReviews(data);
+      setRecentReviews(data?.data || data || []);
     }
   };
 
@@ -98,7 +100,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/health/webhooks');
     if (res.ok) {
       const data = await res.json();
-      setWebhookHealth(data);
+      setWebhookHealth(data?.data || data || {});
     }
   };
 
