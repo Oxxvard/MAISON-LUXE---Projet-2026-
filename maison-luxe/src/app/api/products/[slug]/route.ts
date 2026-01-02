@@ -1,5 +1,4 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { revalidatePath } from 'next/cache';
 import logger from '@/lib/logger';
 import { sendErrorResponse, sendCustomError } from '@/lib/errors';
 import dbConnect from '@/lib/mongodb';
@@ -57,10 +56,6 @@ export const PUT = withAdminAuth(withBodyValidation(UpdateProductSchema, async (
     if (!product) {
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
     }
-
-    // Vider le cache pour que les changements soient instantanés
-    revalidatePath(`/products/${slug}`);
-    revalidatePath(`/admin/products/edit/${slug}`);
 
     console.log('Product updated successfully:', { slug, colorVariantsCount: product.colorVariants?.length });
     return NextResponse.json(product);
