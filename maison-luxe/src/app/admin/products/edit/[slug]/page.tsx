@@ -189,8 +189,10 @@ export default function EditProductPage() {
       });
 
       if (res.ok) {
-        toast.success('Produit mis à jour');
-        router.push('/admin/products');
+        const updatedProduct = await res.json();
+        // Mettre à jour l'état local avec les données du serveur
+        setProduct(updatedProduct);
+        toast.success('✓ Produit mis à jour instantanément');
       } else {
         const error = await res.json();
         console.error('Update error:', error);
