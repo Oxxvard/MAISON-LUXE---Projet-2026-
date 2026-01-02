@@ -47,7 +47,11 @@ export default function NewCategoryPage() {
         toast.success('Catégorie créée');
         router.push('/admin/categories');
       } else {
-        toast.error(data.error || 'Erreur création');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur création'
+        );
       }
     } catch {
       toast.error('Erreur création');

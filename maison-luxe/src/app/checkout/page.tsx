@@ -210,7 +210,11 @@ export default function CheckoutPage() {
         setAppliedCoupon(data);
         toast.success(`Code promo appliqué ! -${data.discount.toFixed(2)}€`);
       } else {
-        toast.error(data.error || 'Code promo invalide');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Code promo invalide'
+        );
         setAppliedCoupon(null);
       }
     } catch (error) {

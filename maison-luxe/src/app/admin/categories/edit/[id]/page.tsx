@@ -40,7 +40,11 @@ export default function EditCategoryPage() {
           setDescription(data.description || '');
           setImage(data.image || '');
         } else {
-          toast.error(data.error || 'Erreur chargement');
+          toast.error(
+            (data?.error && (data.error.message || data.error.code)) ||
+              (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+              'Erreur chargement'
+          );
         }
       } catch {
         toast.error('Erreur chargement');
@@ -62,7 +66,11 @@ export default function EditCategoryPage() {
         toast.success('Catégorie mise à jour');
         router.push('/admin/categories');
       } else {
-        toast.error(data.error || 'Erreur mise à jour');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur mise à jour'
+        );
       }
     } catch {
       toast.error('Erreur mise à jour');

@@ -27,7 +27,13 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        toast.error(result.error);
+        const msg =
+          typeof result.error === 'string'
+            ? result.error
+            : result.error && typeof result.error === 'object' && 'message' in result.error
+            ? (result.error as any).message
+            : JSON.stringify(result.error);
+        toast.error(msg);
       } else {
         toast.success("Connexion réussie");
         router.push("/");

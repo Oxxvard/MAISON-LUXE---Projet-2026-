@@ -78,7 +78,11 @@ export default function WarehousesPage() {
         setCustomWarehouseId('');
         toast.success('Entrepôt chargé !');
       } else {
-        toast.error(data.error || 'Entrepôt non trouvé');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Entrepôt non trouvé'
+        );
       }
     } catch (_err) {
       console.error('Erreur:', _err);

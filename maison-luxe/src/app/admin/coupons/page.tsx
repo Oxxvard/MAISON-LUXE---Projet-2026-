@@ -51,7 +51,11 @@ export default function CouponsPage() {
         setCoupons(coupons.filter(c => c._id !== id));
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur lors de la suppression');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la suppression'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la suppression');

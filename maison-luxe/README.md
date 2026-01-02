@@ -1,6 +1,32 @@
-# MaisonLuxe - Site E-commerce Dropshipping
+# 🏛️ MaisonLuxe - E-commerce Dropshipping Luxe
 
-Site e-commerce complet pour le dropshipping de produits chinois développé avec Next.js 15, TypeScript, MongoDB/Mongoose, et Tailwind CSS.
+Site e-commerce complet pour le dropshipping de produits de luxe via CJ Dropshipping.  
+**Stack :** Next.js 15 + TypeScript + MongoDB + Stripe + CJ API
+
+📚 **[VOIR LA DOCUMENTATION COMPLÈTE →](./DOCUMENTATION.md)**
+
+---
+
+## ⚡ Démarrage Rapide
+
+```bash
+# Installation
+npm install
+
+# Configuration
+cp .env.example .env.local
+# Remplir les variables requises
+
+# Vérification
+node scripts/startup-check.js
+
+# Démarrage
+npm run dev
+```
+
+🌐 **URL :** http://localhost:3001
+
+---
 
 ## 🚀 Fonctionnalités
 

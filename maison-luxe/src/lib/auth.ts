@@ -133,5 +133,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
+  // Activer le debug en dev pour obtenir plus d'informations sur les erreurs client/server
+  debug: process.env.NODE_ENV !== 'production',
   secret: process.env.NEXTAUTH_SECRET,
 };

@@ -187,7 +187,11 @@ export default function ProductPage() {
         fetchProduct();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur lors de la publication de l\'avis');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la publication de l\'avis'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la publication de l\'avis');
@@ -216,7 +220,11 @@ export default function ProductPage() {
         fetchProduct();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur lors de la modification');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la modification'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la modification de l\'avis');
@@ -239,7 +247,11 @@ export default function ProductPage() {
         fetchProduct();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur lors de la suppression');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la suppression'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la suppression de l\'avis');

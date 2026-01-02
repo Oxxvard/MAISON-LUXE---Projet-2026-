@@ -1,5 +1,3 @@
-// Service CJ Dropshipping API
-
 import fs from 'fs';
 import path from 'path';
 import logger from '@/lib/logger';
@@ -113,6 +111,12 @@ class CJDropshippingService {
       logger.error('CJ_API_KEY is not configured. Set CJ_API_KEY in your environment.');
       throw new Error('CJ_API_KEY not configured');
     }
+    // Recharger le token depuis le fichier au début de chaque appel
+    // (utile si le fichier a été créé/actualisé après le démarrage du processus)
+    try {
+      loadTokenFromFile();
+    } catch (e) {}
+
     // Vérifier le cache global
     if (globalTokenCache.token && Date.now() < globalTokenCache.expiry) {
       const minutesLeft = Math.round((globalTokenCache.expiry - Date.now()) / 1000 / 60);
@@ -224,24 +228,60 @@ class CJDropshippingService {
         ...(params.orderBy !== undefined && { orderBy: params.orderBy.toString() }),
       });
 
-      const response = await fetch(
-        `${this.baseUrl}/product/listV2?${queryParams}`,
-        {
+      const maxRetries = 3;
+      let attempt = 0;
+      let lastError: any = null;
+
+      while (attempt < maxRetries) {
+        attempt += 1;
+        const response = await fetch(`${this.baseUrl}/product/listV2?${queryParams}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'CJ-Access-Token': token,
           },
+        });
+
+        const text = await response.text();
+        let data: any = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON body */ }
+
+        // Success
+        if (response.ok && data && data.code === 200) {
+          return data.data;
         }
-      );
 
-      const data = await response.json();
+        // Detect rate limit from status or CJ body
+        const isRateLimit = response.status === 429 || (data && (data.message?.includes('QPS limit') || data.message?.includes('Too Many Requests') || data.code === 1600200));
 
-      if (data.code === 200) {
-        return data.data;
+        // If rate-limited and we can retry, wait exponential backoff then retry
+        if (isRateLimit && attempt < maxRetries) {
+          const backoff = Math.pow(2, attempt) * 250 + Math.random() * 100; // ms
+          logger.warn('CJ API Search rate-limited, retrying after backoff', { attempt, backoff });
+          await new Promise(r => setTimeout(r, backoff));
+          continue;
+        }
+
+        // Otherwise record last error and break to throw
+        lastError = { response, data, text };
+        break;
       }
 
-      throw new Error(data.message || 'Failed to search products');
+      // Log plus détaillé pour aider au debug (status + body)
+      const status = lastError?.response?.status ?? 'unknown';
+      const statusText = lastError?.response?.statusText ?? '';
+      const body = lastError?.data ?? lastError?.text ?? null;
+
+      logger.error('CJ API Search Error: non-200 response', { status, statusText, body });
+      captureException(new Error(`CJ Search failed: ${status} ${statusText}`), { func: 'searchProducts', status, body });
+
+      const message = (body && body.message) || (typeof body === 'string' ? body : `CJ API returned ${status}`);
+      // If CJ rate-limited, throw explicit message to allow upstream to return 429
+      if (String(message).includes('Too Many Requests') || String(message).includes('QPS limit') || status === 429) {
+        throw new Error('Too Many Requests, QPS limit is 1 time/1second');
+      }
+
+      throw new Error(message || 'Failed to search products');
     } catch (error) {
       logger.error('CJ API Search Error:', error);
       captureException(error, { func: 'searchProducts' });
@@ -253,37 +293,70 @@ class CJDropshippingService {
   async getProductDetails(pid: string, features?: string[]): Promise<Record<string, unknown> | null> {
     const token = await this.getAccessToken();
 
-    try {
-      const params = new URLSearchParams({ pid });
-      
-      // Ajouter les features si fournis (enable_combine, enable_video, enable_inventory)
-      if (features && features.length > 0) {
-        features.forEach(feature => params.append('features', feature));
-      }
+    const params = new URLSearchParams({ pid });
+    if (features && features.length > 0) {
+      features.forEach(feature => params.append('features', feature));
+    }
 
-      const response = await fetch(
-        `${this.baseUrl}/product/query?${params}`,
-        {
+    const maxRetries = 3;
+    let attempt = 0;
+    let lastError: any = null;
+
+    while (attempt < maxRetries) {
+      attempt += 1;
+      try {
+        const response = await fetch(`${this.baseUrl}/product/query?${params}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'CJ-Access-Token': token,
           },
+        });
+
+        const text = await response.text();
+        let data: any = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON */ }
+
+        if (response.ok && data && data.code === 200) {
+          return data.data;
         }
-      );
 
-      const data = await response.json();
+        const isRateLimit = response.status === 429 || (data && (data.message?.includes('QPS limit') || data.message?.includes('Too Many Requests') || data.code === 1600200));
 
-      if (data.code === 200) {
-        return data.data;
+        if (isRateLimit && attempt < maxRetries) {
+          const backoff = Math.pow(2, attempt) * 250 + Math.random() * 100;
+          logger.warn('CJ API Product Details rate-limited, retrying after backoff', { pid, attempt, backoff });
+          await new Promise(r => setTimeout(r, backoff));
+          continue;
+        }
+
+        lastError = { response, data, text };
+        break;
+      } catch (error) {
+        lastError = error;
+        logger.warn('Transient error fetching CJ product details, will retry if attempts remain', { pid, attempt, error: String(error) });
+        if (attempt < maxRetries) {
+          const backoff = Math.pow(2, attempt) * 200 + Math.random() * 100;
+          await new Promise(r => setTimeout(r, backoff));
+          continue;
+        }
+        break;
       }
-
-      throw new Error(data.message || 'Failed to get product details');
-    } catch (error) {
-      logger.error('CJ API Product Details Error:', error);
-      captureException(error, { func: 'getProductDetails', pid });
-      throw error;
     }
+
+    const status = lastError?.response?.status ?? 'unknown';
+    const statusText = lastError?.response?.statusText ?? '';
+    const body = lastError?.data ?? lastError?.text ?? (lastError?.message || null);
+
+    logger.error('CJ API Product Details Error: non-200 response', { pid, status, statusText, body });
+    captureException(new Error(`CJ getProductDetails failed: ${status} ${statusText}`), { func: 'getProductDetails', pid, status, body });
+
+    const message = (body && body.message) || (typeof body === 'string' ? body : `CJ API returned ${status}`);
+    if (String(message).includes('Too Many Requests') || String(message).includes('QPS limit') || status === 429) {
+      throw new Error('Too Many Requests, QPS limit is 1 time/1second');
+    }
+
+    throw new Error(message || 'Failed to get product details');
   }
 
   // Obtenir les catégories CJ (structure hiérarchique)

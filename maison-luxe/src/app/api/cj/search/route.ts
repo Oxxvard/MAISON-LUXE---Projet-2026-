@@ -50,6 +50,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(successResponse(results));
   } catch (error: any) {
     logger.error('CJ Search API Error:', error);
+    // Si l'erreur provient d'un rate-limit CJ, retourner 429 au client
+    const msg = String(error?.message || '');
+    if (msg.includes('Too Many Requests') || msg.includes('QPS limit')) {
+      return sendErrorResponse('TOO_MANY_REQUESTS', msg || 'Too Many Requests');
+    }
+
     return sendErrorResponse('INTERNALerror', error.message || 'Failed to search products');
   }
 }

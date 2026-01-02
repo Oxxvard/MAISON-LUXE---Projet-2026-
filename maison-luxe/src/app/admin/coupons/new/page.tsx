@@ -53,7 +53,11 @@ export default function NewCouponPage() {
         toast.success('Code promo créé avec succès');
         router.push('/admin/coupons');
       } else {
-        toast.error(data.error || 'Erreur lors de la création');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la création'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la création');

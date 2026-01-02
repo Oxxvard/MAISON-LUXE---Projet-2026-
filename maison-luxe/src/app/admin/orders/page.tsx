@@ -66,7 +66,11 @@ export default function AdminOrdersPage() {
         fetchOrders();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur lors de la mise à jour du suivi');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la mise à jour du suivi'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la mise à jour du suivi');
@@ -90,7 +94,11 @@ export default function AdminOrdersPage() {
         toast.success(`Commande CJ créée: ${data.cjOrderNumber}`);
         fetchOrders();
       } else {
-        toast.error(data.error || 'Erreur lors de la création CJ');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur lors de la création CJ'
+        );
       }
     } catch (error) {
       toast.error('Erreur lors de la création CJ');

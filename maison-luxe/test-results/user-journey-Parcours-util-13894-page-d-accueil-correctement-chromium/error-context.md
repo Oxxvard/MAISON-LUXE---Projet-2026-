@@ -1,0 +1,191 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - text: Découvrez le
+      - link "vestiaire des fêtes" [ref=e4] [cursor=pointer]:
+        - /url: /produits
+      - text: MaisonLuxe.
+    - navigation [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button "Menu" [ref=e10] [cursor=pointer]:
+            - img [ref=e11]
+            - generic [ref=e12]: Menu
+          - button "Recherche" [ref=e14] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e18]: Recherche
+        - link "MAISONLUXE" [ref=e19] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e20]:
+          - link "Contactez-nous" [ref=e21] [cursor=pointer]:
+            - /url: /contact
+          - link "Favoris" [ref=e22] [cursor=pointer]:
+            - /url: /favoris
+            - img [ref=e23]
+          - button "Profil" [ref=e26] [cursor=pointer]:
+            - img [ref=e27]
+          - link "Panier" [ref=e30] [cursor=pointer]:
+            - /url: /cart
+            - img [ref=e31]
+    - main [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - img "Luxe et élégance" [ref=e39]
+          - generic [ref=e42]:
+            - heading "MAISONLUXE" [level=1] [ref=e43]
+            - paragraph [ref=e44]: L'Art du Luxe
+            - paragraph [ref=e45]: Découvrez notre collection exclusive où chaque pièce raconte une histoire d'excellence et de raffinement
+            - link "Découvrir la collection" [ref=e47] [cursor=pointer]:
+              - /url: /produits
+              - text: Découvrir la collection
+              - img [ref=e48]
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - img [ref=e58]
+            - heading "Livraison Premium" [level=3] [ref=e63]
+            - paragraph [ref=e64]: Offerte dès 100€ d'achat partout en Europe
+          - generic [ref=e65]:
+            - img [ref=e67]
+            - heading "Paiement Sécurisé" [level=3] [ref=e70]
+            - paragraph [ref=e71]: Transactions cryptées et protégées
+          - generic [ref=e72]:
+            - img [ref=e74]
+            - heading "Service Client" [level=3] [ref=e78]
+            - paragraph [ref=e79]: Assistance personnalisée 7j/7
+        - generic [ref=e82]:
+          - heading "Nos Univers" [level=2] [ref=e83]
+          - paragraph [ref=e84]: Explorez nos collections soigneusement sélectionnées pour vous offrir le meilleur du luxe
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - paragraph [ref=e88]: Collection 2026
+            - heading "Pièces d'Exception" [level=2] [ref=e89]
+            - paragraph [ref=e90]: Une sélection exclusive des créations les plus remarquables de notre maison
+          - link "Explorer toute la collection" [ref=e99] [cursor=pointer]:
+            - /url: /produits
+            - text: Explorer toute la collection
+            - img [ref=e100]
+        - generic [ref=e104]:
+          - img "Notre histoire" [ref=e106]
+          - generic [ref=e107]:
+            - paragraph [ref=e108]: Depuis 2026
+            - heading "L'Excellence à la Française" [level=2] [ref=e109]
+            - generic [ref=e110]:
+              - paragraph [ref=e111]: MaisonLuxe incarne l'essence du raffinement et du savoir-faire d'exception. Chaque création est le fruit d'une passion pour l'excellence et d'un engagement sans compromis envers la qualité.
+              - paragraph [ref=e112]: Notre mission est de vous offrir des pièces uniques qui transcendent les tendances éphémères pour devenir des classiques intemporels.
+              - link "Découvrir notre histoire" [ref=e113] [cursor=pointer]:
+                - /url: /about
+                - text: Découvrir notre histoire
+                - img [ref=e114]
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - heading "Témoignages" [level=2] [ref=e119]
+            - paragraph [ref=e120]: Ce que nos clients disent de nous
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - img [ref=e124]
+                - img [ref=e126]
+                - img [ref=e128]
+                - img [ref=e130]
+                - img [ref=e132]
+              - paragraph [ref=e134]: "\"Une expérience d'achat exceptionnelle. La qualité des produits et du service client est irréprochable.\""
+              - generic [ref=e135]:
+                - paragraph [ref=e136]: Sophie Mercier
+                - paragraph [ref=e137]: Architecte d'intérieur
+            - generic [ref=e138]:
+              - generic [ref=e139]:
+                - img [ref=e140]
+                - img [ref=e142]
+                - img [ref=e144]
+                - img [ref=e146]
+                - img [ref=e148]
+              - paragraph [ref=e150]: "\"MaisonLuxe allie élégance et modernité. Chaque pièce est une œuvre d'art en soi.\""
+              - generic [ref=e151]:
+                - paragraph [ref=e152]: Marc Dubois
+                - paragraph [ref=e153]: Entrepreneur
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - img [ref=e156]
+                - img [ref=e158]
+                - img [ref=e160]
+                - img [ref=e162]
+                - img [ref=e164]
+              - paragraph [ref=e166]: "\"Un service personnalisé et des produits d'une qualité rare. Je recommande sans hésitation.\""
+              - generic [ref=e167]:
+                - paragraph [ref=e168]: Julie Laurent
+                - paragraph [ref=e169]: Designer
+        - generic [ref=e171]:
+          - heading "Restez Informé" [level=2] [ref=e172]
+          - paragraph [ref=e173]: Inscrivez-vous à notre newsletter et recevez en exclusivité nos dernières créations et événements privés
+          - generic [ref=e174]:
+            - textbox "Votre adresse email" [ref=e175]
+            - button "S'inscrire" [ref=e176] [cursor=pointer]
+          - paragraph [ref=e177]: En vous inscrivant, vous acceptez de recevoir nos communications. Vous pouvez vous désabonner à tout moment.
+    - contentinfo [ref=e178]:
+      - generic [ref=e179]:
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - heading "MAISONLUXE" [level=3] [ref=e182]
+            - paragraph [ref=e183]: Votre destination pour des produits d'exception et un service premium.
+            - generic [ref=e184]:
+              - link [ref=e185] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e186]
+              - link [ref=e188] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e189]
+              - link [ref=e192] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e193]
+          - generic [ref=e195]:
+            - heading "Liens rapides" [level=3] [ref=e196]
+            - list [ref=e197]:
+              - listitem [ref=e198]:
+                - link "Produits" [ref=e199] [cursor=pointer]:
+                  - /url: /produits
+              - listitem [ref=e200]:
+                - link "À propos" [ref=e201] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e202]:
+                - link "Contact" [ref=e203] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e204]:
+                - link "FAQ" [ref=e205] [cursor=pointer]:
+                  - /url: /faq
+          - generic [ref=e206]:
+            - heading "Informations" [level=3] [ref=e207]
+            - list [ref=e208]:
+              - listitem [ref=e209]:
+                - link "Livraison" [ref=e210] [cursor=pointer]:
+                  - /url: /shipping
+              - listitem [ref=e211]:
+                - link "Retours" [ref=e212] [cursor=pointer]:
+                  - /url: /returns
+              - listitem [ref=e213]:
+                - link "Confidentialité" [ref=e214] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e215]:
+                - link "CGV" [ref=e216] [cursor=pointer]:
+                  - /url: /terms
+          - generic [ref=e217]:
+            - heading "Contact" [level=3] [ref=e218]
+            - list [ref=e219]:
+              - listitem [ref=e220]:
+                - img [ref=e221]
+                - generic [ref=e224]:
+                  - text: 123 Avenue des Champs-Élysées
+                  - text: 75008 Paris, France
+              - listitem [ref=e225]:
+                - img [ref=e226]
+                - generic [ref=e228]: +33 1 23 45 67 89
+              - listitem [ref=e229]:
+                - img [ref=e230]
+                - generic [ref=e233]: contact@maisonluxe.fr
+        - paragraph [ref=e235]: © 2026 MaisonLuxe. Tous droits réservés.
+  - button "Open Next.js Dev Tools" [ref=e241] [cursor=pointer]:
+    - img [ref=e242]
+  - alert [ref=e245]
+```

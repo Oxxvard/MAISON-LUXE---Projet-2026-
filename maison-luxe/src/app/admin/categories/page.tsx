@@ -48,7 +48,11 @@ export default function AdminCategoriesPage() {
         fetchCategories();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erreur suppression');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur suppression'
+        );
       }
     } catch {
       toast.error('Erreur suppression');

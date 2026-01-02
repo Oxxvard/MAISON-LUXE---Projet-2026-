@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Download, X, Loader, ArrowLeft, RefreshCw, Truck } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
@@ -66,6 +66,7 @@ export default function CJImportPage() {
   const shippingCache = useState<Map<string, { data: any; expiry: number }>>(() => new Map())[0];
   const [selectedCountry, setSelectedCountry] = useState<string>('FR');
   const [bulkCalculating, setBulkCalculating] = useState(false);
+  const searchTimer = useRef<number | null>(null);
 
   // Rate limiter pour les appels freight (en plus de product details)
   const freightLimiter = new RateLimiter();
@@ -158,17 +159,20 @@ export default function CJImportPage() {
           throw new Error('Limite API atteinte. Veuillez attendre 30 secondes avant de réessayer.');
         }
 
-        const data = await response.json();
+        const json = await response.json();
 
         if (!response.ok) {
-          console.error('API Error:', data);
-          throw new Error(data.error || 'Erreur lors de la récupération des infos');
+          console.error('API Error:', json);
+          throw new Error(json.error || 'Erreur lors de la récupération des infos');
         }
 
+        // Normaliser la charge utile : certains endpoints renvoient { success: true, data: {...} }
+        const data = json?.data ?? json;
+
         console.log('✅ Product details response received:');
+        console.log('   - raw response keys:', Object.keys(json).slice(0, 20));
         console.log('   - warehouseId:', data.warehouseId);
         console.log('   - _source:', data._source);
-        console.log('   - response keys:', Object.keys(data).slice(0, 20));
 
         if (data?.warehouseId) {
           // Mettre en cache
@@ -217,14 +221,42 @@ export default function CJImportPage() {
 
     setSearching(true);
     try {
-      const response = await fetch(
-        `/api/cj/search?keyword=${encodeURIComponent(keyword)}&size=20`
-      );
-      const data = await response.json();
+      const res = await fetch(`/api/cj/search?keyword=${encodeURIComponent(keyword)}&size=20`);
+
+      // Lire le texte brut d'abord (peut être une page HTML en cas de redirect proxy)
+      const text = await res.text();
+      let data: any = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON body */ }
+
+      if (!res.ok) {
+        console.error('Recherche CJ non-ok:', res.status, text);
+        // Si CJ renvoie 429 via la route, afficher message clair
+        if (res.status === 429 || (data && data.error && data.error.code === 'TOO_MANY_REQUESTS')) {
+          toast.error('Trop de requêtes vers CJ — réessayez dans quelques secondes');
+        } else if (res.status === 404) {
+          toast.error('Endpoint introuvable (404) — vérifiez le serveur/dev tunnel');
+        } else {
+          toast.error('Erreur lors de la recherche');
+        }
+        setProducts([]);
+        return;
+      }
+
+      if (!data) {
+        // Corps non-JSON (probablement HTML) — afficher pour debug
+        console.error('Réponse non-JSON reçue pour la recherche CJ:', text.slice(0, 200));
+        toast.error('Réponse inattendue (HTML) reçue — voir la console pour plus de détails');
+        setProducts([]);
+        return;
+      }
+
+      // Certains endpoints renvoient directement l'objet CJ, d'autres sont enveloppés
+      // dans { success: true, data: {...} }. Normaliser la charge utile.
+      const payload = data.data || data;
 
       // API v2 retourne les produits dans content[0].productList
-      if (data.content && data.content.length > 0 && data.content[0].productList) {
-        const productList = data.content[0].productList;
+      if (payload.content && payload.content.length > 0 && payload.content[0].productList) {
+        const productList = payload.content[0].productList;
         setProducts(productList);
         toast.success(`${productList.length} produits trouvés`);
       } else {
@@ -237,6 +269,17 @@ export default function CJImportPage() {
     } finally {
       setSearching(false);
     }
+  };
+
+  // Debounced search pour éviter d'atteindre le QPS limit côté CJ
+  const scheduleSearch = () => {
+    if (searchTimer.current) {
+      clearTimeout(searchTimer.current);
+    }
+    searchTimer.current = window.setTimeout(() => {
+      searchProducts();
+      searchTimer.current = null;
+    }, 500);
   };
 
   const refreshSearch = async () => {
@@ -254,17 +297,21 @@ export default function CJImportPage() {
       if (!details) {
         const res = await productDetailsLimiter.call(() => fetch(`/api/cj/product/${productId}?features=enable_inventory`));
         if (!res.ok) {
-          let msg = 'Erreur chargement détails produit';
+          let msg: any = 'Erreur chargement détails produit';
           try {
             const err = await res.json();
-            msg = err.error || msg;
+            msg = err?.error ?? err ?? msg;
           } catch {}
-          toast.error(msg);
+          const safe = typeof msg === 'string' ? msg : (msg?.message || msg?.code || JSON.stringify(msg));
+          toast.error(safe || 'Erreur chargement détails produit');
           setShippingInfo(prev => ({ ...prev, [productId]: null }));
           return; // ne pas interrompre le calcul global, on passe au suivant
         }
-        details = await res.json();
-        setProductDetailsCache(prev => ({ ...prev, [productId]: details }));
+        let json = await res.json();
+        // Normaliser : certains endpoints renvoient { success:true, data: {...} }
+        const normalized = json?.data ?? json;
+        details = normalized;
+        setProductDetailsCache(prev => ({ ...prev, [productId]: normalized }));
       }
 
       const variants = details?.variants || [];
@@ -289,7 +336,11 @@ export default function CJImportPage() {
         }));
         data = await freightRes.json();
         if (!freightRes.ok || !data.success) {
-          toast.error(data.error || 'Erreur calcul livraison');
+          toast.error(
+            (data?.error && (data.error.message || data.error.code)) ||
+              (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+              'Erreur calcul livraison'
+          );
           setShippingInfo(prev => ({ ...prev, [productId]: null }));
           return;
         }
@@ -376,7 +427,11 @@ export default function CJImportPage() {
             { duration: 8000 }
           );
         } else {
-          toast.error(data.error || 'Erreur lors de l\'import');
+          toast.error(
+            (data?.error && (data.error.message || data.error.code)) ||
+              (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+              'Erreur lors de l\'import'
+          );
         }
       }
     } catch (error) {
@@ -440,7 +495,7 @@ export default function CJImportPage() {
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && searchProducts()}
+                onKeyDown={(e) => e.key === 'Enter' && scheduleSearch()}
                 placeholder="Rechercher des produits... (ex: watch, jewelry, bag)"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
@@ -471,7 +526,7 @@ export default function CJImportPage() {
               </select>
             </div>
             <button
-              onClick={searchProducts}
+              onClick={scheduleSearch}
               disabled={searching}
               className="px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >

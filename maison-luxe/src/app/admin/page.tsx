@@ -130,7 +130,11 @@ export default function AdminDashboard() {
         );
         fetchAllData();
       } else {
-        toast.error(data.error || 'Erreur de synchronisation');
+        toast.error(
+          (data?.error && (data.error.message || data.error.code)) ||
+            (typeof data?.error === 'string' ? data.error : JSON.stringify(data?.error || {})) ||
+            'Erreur de synchronisation'
+        );
       }
     } catch (error) {
       clearInterval(progressInterval);
