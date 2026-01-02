@@ -1,0 +1,26 @@
+{
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__generator": "^7.27.0",
+    "@types/babel__template": "^7.4.4",
+    "@types/babel__traverse": "^7.28.0",
+    "@types/estree": "^1.0.8",
+    "@types/json-schema": "^7.0.15",
+    "@types/mysql": "^2.15.27",
+    "@types/pg": "^8.16.0",
+    "@types/pg-pool": "^2.0.7",
+    "@types/prop-types": "^15.7.15",
+    "@types/raf": "^3.4.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-transition-group": "^4.4.12",
+    "@types/shimmer": "^1.2.0",
+    "@types/stack-utils": "^2.0.3",
+    "@types/tedious": "^18.0.0",
+    "@types/trusted-types": "^2.0.7",
+    "@types/webidl-conversions": "^7.0.3",
+    "@types/whatwg-url": "^13.0.0",
+    "@types/yargs": "^17.0.35",
+    "@types/yargs-parser": "^21.0.3"
+  }
+}
