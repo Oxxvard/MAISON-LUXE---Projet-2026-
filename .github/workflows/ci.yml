@@ -24,13 +24,16 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: npm ci
+        working-directory: ./maison-luxe
       - name: Build for prod (for sourcemaps) if Sentry configured
         if: env.SENTRY_AUTH_TOKEN != ''
+        working-directory: ./maison-luxe
         run: |
           echo "SENTRY_AUTH_TOKEN present — building production bundle"
           npm run build
       - name: Upload Sentry sourcemaps (conditional)
         if: env.SENTRY_AUTH_TOKEN != ''
+        working-directory: ./maison-luxe
         run: |
           echo "Uploading sourcemaps to Sentry"
           RELEASE=${GITHUB_SHA}
@@ -51,10 +54,13 @@ jobs:
           echo "Mongo did not start after ~180s" && exit 1
       - name: Seed CI database
         run: node scripts/ci-seed.js
+        working-directory: ./maison-luxe
       - name: TypeScript check
         run: npx tsc --noEmit
+        working-directory: ./maison-luxe
       - name: Run tests (including integration)
         run: npm test --silent
+        working-directory: ./maison-luxe
     services:
       mongo:
         image: mongo:6.0
