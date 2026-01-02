@@ -25,21 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: ./maison-luxe
-      - name: Build for prod (for sourcemaps) if Sentry configured
-        if: env.SENTRY_AUTH_TOKEN != ''
-        working-directory: ./maison-luxe
-        run: |
-          echo "SENTRY_AUTH_TOKEN present — building production bundle"
-          npm run build
-      - name: Upload Sentry sourcemaps (conditional)
-        if: env.SENTRY_AUTH_TOKEN != ''
-        working-directory: ./maison-luxe
-        run: |
-          echo "Uploading sourcemaps to Sentry"
-          RELEASE=${GITHUB_SHA}
-          npx @sentry/cli releases new -p "$SENTRY_PROJECT" "$RELEASE"
-          npx @sentry/cli releases files "$RELEASE" upload-sourcemaps .next --rewrite --url-prefix "~/_next"
-          npx @sentry/cli releases finalize "$RELEASE"
       - name: Wait for MongoDB
         run: |
           # Wait up to ~3 minutes for MongoDB to be ready (60 attempts x 3s)
