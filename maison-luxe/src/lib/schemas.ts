@@ -53,6 +53,17 @@ export const RegisterSchema = z
 // PRODUITS
 // ============================================
 
+export const ColorVariantSchema = z.object({
+  color: z
+    .string()
+    .min(1, 'La couleur est requise')
+    .max(50, 'La couleur ne peut pas dépasser 50 caractères'),
+  images: z
+    .array(z.string().url("URL d'image invalide"))
+    .min(1, 'Au moins une image par couleur est requise'),
+  cjVid: z.string().optional(),
+});
+
 export const CreateProductSchema = z.object({
   name: z
     .string()
@@ -92,6 +103,14 @@ export const CreateProductSchema = z.object({
   featured: z.boolean().optional().default(false),
   cjPid: z.string().optional(),
   cjVid: z.string().optional(),
+  colorVariants: z
+    .array(ColorVariantSchema)
+    .optional()
+    .default([]),
+  shippingCost: z
+    .number()
+    .positive('Le coût d\'expédition doit être positif')
+    .optional(),
 });
 
 export const UpdateProductSchema = CreateProductSchema.partial();
