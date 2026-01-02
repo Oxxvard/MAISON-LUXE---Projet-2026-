@@ -1,0 +1,74 @@
+name: CI-Working
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --experimental-vm-modules
+      RUN_INTEGRATION: true
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      MONGODB_URI: mongodb://localhost:27017/maisonluxe_ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./maison-luxe
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..60}; do
+            if nc -z localhost 27017; then
+              echo "✅ MongoDB ready!"
+              exit 0
+            fi
+            echo "⏳ Waiting for MongoDB... ($i/60)"
+            sleep 3
+          done
+          echo "❌ MongoDB timeout" && exit 1
+      - name: Seed database
+        run: node scripts/ci-seed.js
+        working-directory: ./maison-luxe
+      - name: Run tests
+        run: npm test --silent
+        working-directory: ./maison-luxe
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'quit(db.runCommand({ping:1}).ok ? 0 : 1)'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+  deploy-ready:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Pipeline Success
+        run: |
+          echo "🎉 SUCCÈS COMPLET !"
+          echo ""
+          echo "✅ MongoDB: Connecté et fonctionnel"
+          echo "✅ Tests: Tous passés"
+          echo "✅ Intégration: Validée"
+          echo ""
+          echo "🚀 PRÊT POUR LE DÉPLOIEMENT!"
+          echo ""
+          echo "Prochaines étapes disponibles:"
+          echo "  1. 🌐 Déploiement Vercel (recommandé)"  
+          echo "  2. 🚂 Déploiement Railway"
+          echo "  3. 🐳 Conteneurisation Docker"
+          echo "  4. ⚙️ Configuration build (résolution imports @)"
