@@ -45,6 +45,8 @@ export const PUT = withAdminAuth(withBodyValidation(UpdateProductSchema, async (
     const { slug } = await ctx.params;
     await dbConnect();
 
+    console.log('Updating product:', { slug, dataKeys: Object.keys(data) });
+
     const product = await Product.findOneAndUpdate(
       { slug },
       data,
@@ -55,8 +57,15 @@ export const PUT = withAdminAuth(withBodyValidation(UpdateProductSchema, async (
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
     }
 
+    console.log('Product updated successfully:', { slug, colorVariantsCount: product.colorVariants?.length });
     return NextResponse.json(product);
   } catch (error: any) {
+    console.error('Update error details:', {
+      message: error.message,
+      code: error.code,
+      name: error.name,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+    });
     logger.error('Erreur mise à jour produit:', error);
     return sendErrorResponse('INTERNALerror', error.message || 'Erreur lors de la mise à jour du produit');
   }

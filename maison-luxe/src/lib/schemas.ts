@@ -60,7 +60,8 @@ export const ColorVariantSchema = z.object({
     .max(50, 'La couleur ne peut pas dépasser 50 caractères'),
   images: z
     .array(z.string().url("URL d'image invalide"))
-    .min(1, 'Au moins une image par couleur est requise'),
+    .optional()
+    .default([]),
   cjVid: z.string().optional(),
 });
 
