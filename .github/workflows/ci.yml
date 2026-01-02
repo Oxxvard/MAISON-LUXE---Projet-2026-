@@ -84,7 +84,7 @@ jobs:
       - name: Debug - Test TypeScript resolution
         run: |
           echo "=== Testing TypeScript module resolution ==="
-          npx tsc --showConfig
+          ./node_modules/.bin/tsc --showConfig | head -20
           echo "=== Testing import resolution ==="
           node -e "
             const fs = require('fs');
@@ -104,6 +104,7 @@ jobs:
             console.log('AddressAutocomplete.tsx exists:', fs.existsSync(addressPath));
             console.log('PhoneInput.tsx exists:', fs.existsSync(phonePath));
           "
+        working-directory: ./maison-luxe
         working-directory: ./maison-luxe
       - name: Build
         run: npm run build
