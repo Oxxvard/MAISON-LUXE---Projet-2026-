@@ -162,18 +162,19 @@ npm run test:e2e:ui         # Interface de test Playwright
 - ✅ **Next.js 16** - Mise à jour avec Turbopack
 - ✅ **Déploiement Vercel** - Site LIVE en production
 - ✅ **Variables production** - Toutes configurées sur Vercel
+- ✅ **Pages légales** - Shipping, Terms, Privacy, Returns, FAQ créées (404 corrigées)
 
 ### Priorité IMMÉDIATE 🎯 (Configuration post-déploiement)
 
 #### 1. Configuration Production (EN COURS)
 - ✅ **Vercel** - Site déployé sur https://maison-luxe-five.vercel.app
 - ✅ **Variables environnement** - MongoDB, NextAuth, Stripe, CJ configurées
+- ✅ **Pages légales** - Toutes les pages obligatoires créées
 - [ ] **Webhooks Stripe** - Endpoint production à configurer
-- [ ] **Compte admin** - Première connexion admin
-- [ ] **Import CJ** - Premiers produits de test
 - [ ] **Tests production** - Parcours complet utilisateur
+- [ ] **Import CJ** - Premiers produits de test
 
-**Temps estimé :** 1-2 heures
+**Temps estimé :** 30min-1h (plus que les webhooks et tests)
 
 #### 2. Finaliser Build CI
 - [ ] Résoudre imports `@/` en environnement CI

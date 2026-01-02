@@ -161,8 +161,16 @@ class CJDropshippingService {
         return globalTokenCache.token!;
       }
       throw new Error(data.message || 'Failed to get access token');
-    } catch (error) {
+    } catch (error: any) {
       logger.error('CJ API Authentication Error:', error);
+      
+      // Si c'est une erreur de rate limit, attendre avant de retry
+      if (error.message && error.message.includes('Too Many Requests')) {
+        logger.warn('⚠️ CJ Rate limit hit - blocking new auth requests for 5 minutes');
+        globalTokenCache.expiry = Date.now() + (5 * 60 * 1000); // Block for 5 minutes
+        throw new Error('CJ Rate limit exceeded. Please wait 5 minutes before trying again.');
+      }
+      
       captureException(error, { func: 'getAccessToken' });
       throw error;
     }
