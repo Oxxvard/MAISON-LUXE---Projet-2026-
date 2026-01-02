@@ -4,10 +4,11 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-async function updateAdminEmail() {
+async function createAdmin() {
   try {
-    console.log('=== Mise à jour email admin ===\n');
+    console.log('=== Création compte admin ===\n');
 
     const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/maisonluxe';
 
@@ -24,35 +25,45 @@ async function updateAdminEmail() {
 
     const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-    const admin = await User.findOne({ email: 'admin@maisonluxe.com' });
+    // Vérifier si admin existe déjà
+    const existingAdmin = await User.findOne({ 
+      $or: [
+        { email: 'admin@maisonluxe.com' },
+        { email: 'florianvial0@gmail.com' },
+        { role: 'admin' }
+      ]
+    });
     
-    if (admin) {
-      admin.email = 'florianvial0@gmail.com';
-      await admin.save();
-      console.log('✅ Email admin changé en florianvial0@gmail.com');
+    if (existingAdmin) {
+      console.log('✅ Compte admin existant trouvé :');
+      console.log(`   Email: ${existingAdmin.email}`);
+      console.log(`   Nom: ${existingAdmin.name}`);
+      console.log(`   Role: ${existingAdmin.role}`);
     } else {
-      console.log('⚠️ Admin non trouvé, création...');
-      const bcrypt = require('bcryptjs');
+      console.log('⚠️ Aucun admin trouvé, création...');
+      
       const hashedPassword = await bcrypt.hash('Admin123!', 10);
       
-      await User.create({
+      const newAdmin = await User.create({
         name: 'Admin',
         email: 'florianvial0@gmail.com',
         password: hashedPassword,
         role: 'admin',
       });
-      console.log('✅ Admin créé avec florianvial0@gmail.com');
+      
+      console.log('✅ Nouveau compte admin créé :');
+      console.log(`   Email: ${newAdmin.email}`);
+      console.log(`   Mot de passe: Admin123!`);
+      console.log(`   Role: ${newAdmin.role}`);
     }
 
     await mongoose.connection.close();
+    console.log('\n✓ Connexion fermée');
     process.exit(0);
   } catch (error) {
     console.error('❌ Erreur:', error);
     process.exit(1);
   }
-}
-
-updateAdminEmail();
 }
 
 createAdmin();

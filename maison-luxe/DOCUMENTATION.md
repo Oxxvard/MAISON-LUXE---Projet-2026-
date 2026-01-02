@@ -3,9 +3,13 @@
 ![CI/CD](https://github.com/Oxxvard/Ecommerceproject2026/actions/workflows/main.yml/badge.svg)
 
 **Projet :** E-commerce Dropshipping Luxe  
-**Stack :** Next.js 15 + TypeScript + MongoDB + Stripe + CJ Dropshipping  
+**Stack :** Next.js 16 + TypeScript + MongoDB + Stripe + CJ Dropshipping  
 **Dernière mise à jour :** 2 janvier 2026  
-**Statut :** ✅ CI/CD OPÉRATIONNELLE - Tests automatisés, MongoDB intégré, prêt déploiement
+**Statut :** 🚀 EN PRODUCTION - Site live sur Vercel, CI/CD opérationnelle, 98% MVP
+
+**URLs Production :**
+- **Site principal :** https://maison-luxe-five.vercel.app
+- **Dashboard Vercel :** https://vercel.com/maison-luxe/maison-luxe
 
 ---
 
@@ -150,22 +154,26 @@ npm run test:e2e:ui         # Interface de test Playwright
 
 ### ✅ ACCOMPLI RÉCEMMENT (Janvier 2026)
 - ✅ **CI/CD Pipeline** - Complètement opérationnelle
-- ✅ **MongoDB Integration** - Tests avec base de données réelle
+- ✅ **MongoDB Integration** - Tests avec base de données réelle  
 - ✅ **Health Checks** - MongoDB avec `mongosh` en CI
 - ✅ **Seeding automatique** - Données de test injectées
 - ✅ **GitHub Secrets** - MONGODB_URI, NEXTAUTH_SECRET, SENTRY_*
 - ✅ **Pipeline Status** - Tous les tests passent
+- ✅ **Next.js 16** - Mise à jour avec Turbopack
+- ✅ **Déploiement Vercel** - Site LIVE en production
+- ✅ **Variables production** - Toutes configurées sur Vercel
 
-### Priorité IMMÉDIATE 🚀 (Prêt maintenant)
+### Priorité IMMÉDIATE 🎯 (Configuration post-déploiement)
 
-#### 1. Déploiement Production
-- [ ] **Vercel** - Configuration automatique (recommandé)
-- [ ] **Railway** - Base de données + app
-- [ ] **Docker** - Conteneurisation
-- [ ] Variables d'environnement production
-- [ ] DNS et domaine personnalisé
+#### 1. Configuration Production (EN COURS)
+- ✅ **Vercel** - Site déployé sur https://maison-luxe-five.vercel.app
+- ✅ **Variables environnement** - MongoDB, NextAuth, Stripe, CJ configurées
+- [ ] **Webhooks Stripe** - Endpoint production à configurer
+- [ ] **Compte admin** - Première connexion admin
+- [ ] **Import CJ** - Premiers produits de test
+- [ ] **Tests production** - Parcours complet utilisateur
 
-**Temps estimé :** 2-4 heures
+**Temps estimé :** 1-2 heures
 
 #### 2. Finaliser Build CI
 - [ ] Résoudre imports `@/` en environnement CI
@@ -205,34 +213,59 @@ npm run test:e2e:ui         # Interface de test Playwright
 
 ---
 
-## 🚀 GUIDE DÉPLOIEMENT IMMÉDIAT
+## 🚀 SITE EN PRODUCTION ✅
 
-### Option 1 : Vercel (Recommandé)
+**URL principale :** https://maison-luxe-five.vercel.app
+
+### Configuration Production Réalisée
 ```bash
-# 1. Installer Vercel CLI
-npm i -g vercel
-
-# 2. Déployer depuis /maison-luxe
-cd maison-luxe
-vercel
-
-# 3. Configurer variables d'environnement
-# MONGODB_URI, NEXTAUTH_SECRET, STRIPE_SECRET_KEY, etc.
+✅ Vercel CLI installé
+✅ Projet déployé et accessible
+✅ Next.js 16.1.1 + Turbopack
+✅ Variables d'environnement configurées :
+   - MONGODB_URI (production MongoDB Atlas)
+   - NEXTAUTH_SECRET 
+   - NEXTAUTH_URL (https://maison-luxe-five.vercel.app)
+   - STRIPE_SECRET_KEY / NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+   - STRIPE_WEBHOOK_SECRET
+   - CJ_API_KEY / CJ_API_SECRET
 ```
 
-### Option 2 : Railway
+## 🔧 CONFIGURATION POST-DÉPLOIEMENT
+
+### Étape 1 : Webhooks Stripe (URGENT)
 ```bash
-# 1. Connecter repo GitHub
-# 2. Choisir service Node.js + MongoDB
-# 3. Configurer variables
-# 4. Deploy automatique
+# Configurer dans Stripe Dashboard :
+# Endpoint: https://maison-luxe-five.vercel.app/api/webhook/stripe
+# Events: checkout.session.completed, payment_intent.succeeded
 ```
 
-### Option 3 : Docker
+### Étape 2 : Créer Compte Admin
 ```bash
-# Dockerfile disponible dans /maison-luxe
-docker build -t maison-luxe .
-docker run -p 3000:3000 maison-luxe
+# Méthode 1: Via base de données MongoDB Atlas
+# Se connecter à MongoDB Atlas → Collections → users
+# Créer un utilisateur et définir role: "admin"
+
+# Méthode 2: Via script (nécessite MONGODB_URI production)
+MONGODB_URI="production_uri" node scripts/create-admin.js
+```
+
+### Étape 3 : Import Premiers Produits CJ
+```bash
+# 1. Se connecter en admin : https://maison-luxe-five.vercel.app/auth/signin
+# 2. Accéder CJ Import : /admin/cj-import
+# 3. Rechercher "luxury watch" ou "gold bracelet"
+# 4. Importer 5-10 produits de test
+```
+
+### Étape 4 : Tests Production Complets
+```bash
+# Parcours utilisateur :
+# 1. Inscription/Login
+# 2. Navigation produits
+# 3. Ajout panier
+# 4. Checkout Stripe (mode test)
+# 5. Vérification commande admin
 ```
 
 ## 📋 CHECKLIST PRE-DÉPLOIEMENT
@@ -1047,17 +1080,19 @@ TOO_MANY_REQUESTS
 
 ## 📝 CHANGELOG
 
-### 2 janvier 2026 (Très tard - CI/CD FINALE ✅)
-- ✅ **CI/CD Pipeline finale** - `.github/workflows/main.yml` opérationnelle
-- ✅ **MongoDB 6.0 service** - Health check avec `mongosh` fonctionnel
-- ✅ **Seeding automatique** - Base de données test via `scripts/ci-seed.js`
-- ✅ **Tous les tests passent** - 109 tests (79 Jest + 30 Playwright)
-- ✅ **GitHub Actions** - Pipeline clean, sans conflits
-- ✅ **Variables secrets** - MONGODB_URI, NEXTAUTH_SECRET configurés
-- ✅ **Build step** - Temporairement désactivé (résolution imports @/)
-- ✅ **Badge CI/CD** - Mis à jour vers workflow main.yml
-- ✅ **Prêt déploiement** - Vercel/Railway/Docker disponibles
-- ✅ **Progression globale** - MVP passé de 90% à 95%
+### 2 janvier 2026 (DÉPLOIEMENT PRODUCTION RÉUSSI 🚀)
+- ✅ **Next.js 16.1.1** - Mise à jour avec résolution vulnérabilités Vercel
+- ✅ **Configuration Turbopack** - Résolution imports @ en production
+- ✅ **Sentry mis à jour** - Compatibilité Next.js 16 (v9.x)
+- ✅ **Build production** - 59 routes générées avec succès
+- ✅ **Déploiement Vercel** - Site LIVE sur https://maison-luxe-five.vercel.app
+- ✅ **Variables environnement** - Toutes configurées (MongoDB, Stripe, CJ, NextAuth)
+- ✅ **Pipeline CI/CD** - Intégration continue avec déploiement automatique
+- ✅ **File .nvmrc** - Node.js 20 spécifié pour Vercel
+- ✅ **Tests complets** - 109 tests passent en CI avant déploiement
+- ✅ **Progression globale** - MVP passé de 95% à 98% (EN PRODUCTION)
+
+### 2 janvier 2026 (CI/CD FINALE)
 
 ### 2 janvier 2026 (CI/CD Debugging intensif)
 - 🔧 **Résolution MongoDB** - Health check `mongosh` vs `mongo`
@@ -1104,14 +1139,16 @@ TOO_MANY_REQUESTS
 
 ---
 
-**Dernière mise à jour :** 2 janvier 2026 (finale CI/CD)  
-**Version :** 1.2.0 (MVP 95% - CI/CD complète)  
-**Statut :** 🚀 PRÊT DÉPLOIEMENT - Pipeline CI/CD opérationnelle, tous tests passent
+**Dernière mise à jour :** 2 janvier 2026 (DÉPLOIEMENT PRODUCTION)  
+**Version :** 1.3.0 (MVP 98% - EN PRODUCTION)  
+**Statut :** 🌍 SITE LIVE - https://maison-luxe-five.vercel.app
 
 **Prochaines étapes immédiates :**
-1. 🚀 **Déploiement Vercel/Railway** (recommandé - 2h)
-2. 🔧 **Résoudre imports @/ en CI** pour build complet (2h) 
-3. 🎯 **Configuration production** (monitoring, domaine, SSL)
+1. 🎯 **Configurer webhooks Stripe** pour paiements production (30min)
+2. 👨‍💼 **Créer compte admin** et se connecter (15min)
+3. 📦 **Importer premiers produits CJ** pour tester (30min)
+4. ✅ **Tests production complets** - parcours utilisateur (45min)
+5. 🌐 **Domaine personnalisé** (optionnel - 1h)
 
 ---
 
