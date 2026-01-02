@@ -21,32 +21,22 @@ export async function GET(
     }
 
     const productDoc = await Product.findOne({ slug })
-      .populate('category', 'name slug');
+      .populate('category', 'name slug')
+      .lean()
+      .maxTimeMS(10000);
 
     if (!productDoc) {
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
     }
 
-    // Convertir le document Mongoose en objet JavaScript brut
-    const product = productDoc.toObject ? productDoc.toObject() : JSON.parse(JSON.stringify(productDoc));
-
-    // S'assurer que les ObjectId sont convertis en strings
-    if (product._id && typeof product._id !== 'string') {
-      product._id = product._id.toString();
-    }
-    if (product.category && product.category._id && typeof product.category._id !== 'string') {
-      product.category._id = product.category._id.toString();
-    }
-
-    return NextResponse.json(product);
+    return NextResponse.json(productDoc);
   } catch (error: any) {
-    logger.error('Erreur récupération produit:', error);
-    console.error('Product API Error Details:', {
+    logger.error('Erreur récupération produit:', {
+      slug: params,
       message: error?.message,
       code: error?.code,
-      stack: error?.stack?.split('\n').slice(0, 5).join('\n'),
     });
-    return sendErrorResponse('INTERNALerror', 'Erreur lors de la récupération du produit');
+    return sendErrorResponse('INTERNALerror', `Erreur API: ${error?.message?.substring(0, 100)}`);
   }
 }
 
