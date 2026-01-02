@@ -3,6 +3,21 @@
  * Teste la logique d'authentification et d'autorisation
  */
 
+import { getServerSession } from 'next-auth';
+
+// Étendre les types NextAuth pour inclure nos propriétés personnalisées
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
+      role?: string;
+    };
+  }
+}
+
 // Mock de NextAuth
 jest.mock('next-auth', () => ({
   getServerSession: jest.fn(),
@@ -24,9 +39,11 @@ jest.mock('@/lib/sentry', () => ({
 
 // Mock de authOptions
 jest.mock('@/lib/auth', () => ({
-  authOptions: {},}));
+  authOptions: {},
+}));
 
-import { getServerSession } from 'next-auth';
+// Type le mock
+const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
 
 describe('Auth Middleware Logic', () => {
   beforeEach(() => {
@@ -115,15 +132,15 @@ describe('Auth Middleware Logic', () => {
         },
       };
 
-      getServerSession.mockResolvedValue(mockSession);
+      mockGetServerSession.mockResolvedValue(mockSession);
       const session = await getServerSession({});
 
       expect(session).toBeDefined();
-      expect(session?.user.id).toBe('user123');
+      expect(session?.user?.id).toBe('user123');
     });
 
     it('devrait retourner null si non authentifié', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockGetServerSession.mockResolvedValue(null);
       const session = await getServerSession({});
 
       expect(session).toBeNull();
@@ -138,10 +155,10 @@ describe('Auth Middleware Logic', () => {
         },
       };
 
-      getServerSession.mockResolvedValue(mockAdminSession);
+      mockGetServerSession.mockResolvedValue(mockAdminSession);
       const session = await getServerSession({});
 
-      expect(session?.user.role).toBe('admin');
+      expect(session?.user?.role).toBe('admin');
     });
   });
 
