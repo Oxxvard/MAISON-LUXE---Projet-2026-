@@ -20,21 +20,21 @@ export async function GET(
       return sendCustomError(400, 'INVALID_SLUG', 'Slug manquant');
     }
 
-    let product = await Product.findOne({ slug })
+    const productDoc = await Product.findOne({ slug })
       .populate('category', 'name slug');
 
-    if (!product) {
+    if (!productDoc) {
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
     }
 
     // Convertir le document Mongoose en objet JavaScript brut
-    product = product.toObject ? product.toObject() : product;
+    const product = productDoc.toObject ? productDoc.toObject() : JSON.parse(JSON.stringify(productDoc));
 
     // S'assurer que les ObjectId sont convertis en strings
-    if (product._id) {
+    if (product._id && typeof product._id !== 'string') {
       product._id = product._id.toString();
     }
-    if (product.category && product.category._id) {
+    if (product.category && product.category._id && typeof product.category._id !== 'string') {
       product.category._id = product.category._id.toString();
     }
 
