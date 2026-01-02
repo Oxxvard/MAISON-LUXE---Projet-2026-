@@ -81,16 +81,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: ./maison-luxe
-      - name: Debug - List files
+      - name: Debug - Test TypeScript resolution
         run: |
-          echo "=== Working directory: $(pwd) ==="
-          ls -la
-          echo "=== Contents of src/ ==="
-          ls -la src/
-          echo "=== Contents of src/store/ ==="
-          ls -la src/store/
-          echo "=== Contents of src/components/ ==="
-          ls -la src/components/ | head -10
+          echo "=== Testing TypeScript module resolution ==="
+          npx tsc --showConfig
+          echo "=== Testing import resolution ==="
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Test if @ paths work
+            const tsconfig = JSON.parse(fs.readFileSync('./tsconfig.json', 'utf8'));
+            console.log('baseUrl:', tsconfig.compilerOptions.baseUrl);
+            console.log('paths:', tsconfig.compilerOptions.paths);
+            
+            // Check if files exist with absolute paths
+            const storePath = path.resolve('./src/store/cart.ts');
+            const addressPath = path.resolve('./src/components/AddressAutocomplete.tsx');
+            const phonePath = path.resolve('./src/components/PhoneInput.tsx');
+            
+            console.log('cart.ts exists:', fs.existsSync(storePath));
+            console.log('AddressAutocomplete.tsx exists:', fs.existsSync(addressPath));
+            console.log('PhoneInput.tsx exists:', fs.existsSync(phonePath));
+          "
         working-directory: ./maison-luxe
       - name: Build
         run: npm run build
