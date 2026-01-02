@@ -5,7 +5,12 @@ const nextConfig = {
   
   // Add explicit webpack configuration for @ alias
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    config.resolve.alias['@'] = require('path').join(__dirname, 'src');
+    // Fix @ alias resolution in CI
+    const path = require('path');
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
     return config;
   },
   

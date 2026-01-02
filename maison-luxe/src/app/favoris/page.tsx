@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import ProductCard from '../../components/ProductCard';
+import ProductCard from '@/components/ProductCard';
 import { Heart } from 'lucide-react';
 
 export default function FavorisPage() {

@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useCartStore } from '../../store/cart';
+import { useCartStore } from '@/store/cart';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import Select from 'react-select';
-import AddressAutocomplete from '../../components/AddressAutocomplete';
-import PhoneInput from '../../components/PhoneInput';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
+import PhoneInput from '@/components/PhoneInput';
 
 // Liste des pays de l'UE + Suisse
 const euCountries = [
