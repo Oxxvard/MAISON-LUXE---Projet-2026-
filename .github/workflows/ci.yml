@@ -77,8 +77,20 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: 'maison-luxe/package-lock.json'
       - name: Install dependencies
         run: npm ci
+        working-directory: ./maison-luxe
+      - name: Debug - List files
+        run: |
+          echo "=== Working directory: $(pwd) ==="
+          ls -la
+          echo "=== Contents of src/ ==="
+          ls -la src/
+          echo "=== Contents of src/store/ ==="
+          ls -la src/store/
+          echo "=== Contents of src/components/ ==="
+          ls -la src/components/ | head -10
         working-directory: ./maison-luxe
       - name: Build
         run: npm run build
