@@ -193,7 +193,8 @@ export default function EditProductPage() {
         router.push('/admin/products');
       } else {
         const error = await res.json();
-        toast.error(error.error || 'Erreur lors de la mise à jour');
+        console.error('Update error:', error);
+        toast.error(error.error?.message || error.error || 'Erreur lors de la mise à jour');
       }
     } catch (error) {
       console.error('Error updating product:', error);
