@@ -245,7 +245,7 @@ export default function Navbar() {
                                     <p className="font-medium text-gray-900">{product.name}</p>
                                     <p className="text-sm text-gray-500">{typeof product.category === 'object' && 'name' in product.category ? product.category.name : ''}</p>
                                   </div>
-                                  <span className="font-semibold text-gray-900">{product.price.toFixed(2)} €</span>
+                                  <span className="font-semibold text-gray-900">{(product.price || 0).toFixed(2)} €</span>
                                 </Link>
                               ))}
                             </div>

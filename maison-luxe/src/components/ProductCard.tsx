@@ -228,9 +228,9 @@ function ProductCard({ product }: ProductCardProps) {
           {/* Price */}
           <div className="flex items-center justify-center space-x-2">
             <span className="text-lg font-bold text-gray-900">
-              {product.price.toFixed(2)} €
+              {(product.price || 0).toFixed(2)} €
             </span>
-            {product.compareAtPrice && (
+            {product.compareAtPrice && product.compareAtPrice > (product.price || 0) && (
               <span className="text-sm text-gray-400 line-through">
                 {product.compareAtPrice.toFixed(2)} €
               </span>

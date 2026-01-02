@@ -208,7 +208,7 @@ export default function CheckoutPage() {
 
       if (res.ok && data.valid) {
         setAppliedCoupon(data);
-        toast.success(`Code promo appliqué ! -${data.discount.toFixed(2)}€`);
+        toast.success(`Code promo appliqué ! -${(data.discount || 0).toFixed(2)}€`);
       } else {
         toast.error(
           (data?.error && (data.error.message || data.error.code)) ||
@@ -646,7 +646,7 @@ export default function CheckoutPage() {
                   <span className="flex items-center gap-2">
                     Code promo: <code className="bg-green-50 px-2 py-0.5 rounded text-xs">{appliedCoupon.code}</code>
                   </span>
-                  <span className="whitespace-nowrap">-{appliedCoupon.discount.toFixed(2)}&nbsp;€</span>
+                  <span className="whitespace-nowrap">-{(appliedCoupon.discount || 0).toFixed(2)}&nbsp;€</span>
                 </div>
               )}
               

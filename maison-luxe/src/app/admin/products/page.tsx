@@ -134,15 +134,18 @@ export default function AdminProductsPage() {
             </thead>
             <tbody>
               {products.map((product) => {
-                const margin = product.price - product.costPrice;
-                const marginPercent = (margin / product.costPrice) * 100;
+                const costPrice = product.costPrice || 0;
+                const price = product.price || 0;
+                const shippingCost = product.shippingCost || 0;
+                const margin = price - costPrice;
+                const marginPercent = costPrice > 0 ? (margin / costPrice) * 100 : 0;
                 
                 return (
                   <tr key={product._id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4">{product.name}</td>
-                    <td className="py-3 px-4">{product.costPrice.toFixed(2)} €</td>
-                    <td className="py-3 px-4 text-orange-600 font-medium">{(product.shippingCost || 0).toFixed(2)} €</td>
-                    <td className="py-3 px-4 font-semibold">{product.price.toFixed(2)} €</td>
+                    <td className="py-3 px-4">{product.name || 'Nom indisponible'}</td>
+                    <td className="py-3 px-4">{costPrice.toFixed(2)} €</td>
+                    <td className="py-3 px-4 text-orange-600 font-medium">{shippingCost.toFixed(2)} €</td>
+                    <td className="py-3 px-4 font-semibold">{price.toFixed(2)} €</td>
                     <td className="py-3 px-4">
                       <span className="text-green-600 font-semibold">
                         +{margin.toFixed(2)} € ({marginPercent.toFixed(0)}%)

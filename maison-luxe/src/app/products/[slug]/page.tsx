@@ -387,7 +387,7 @@ export default function ProductPage() {
                   ))}
                 </div>
                 <span className="ml-2 text-gray-600">
-                  {product.rating.toFixed(1)} ({product.reviewCount} avis)
+                  {(product.rating || 0).toFixed(1)} ({product.reviewCount || 0} avis)
                 </span>
               </>
             ) : (
@@ -396,8 +396,8 @@ export default function ProductPage() {
           </div>
 
           <div className="mb-6">
-            <span className="text-4xl font-bold text-gray-900">{product.price.toFixed(2)} €</span>
-            {product.compareAtPrice && (
+            <span className="text-4xl font-bold text-gray-900">{(product.price || 0).toFixed(2)} €</span>
+            {product.compareAtPrice && product.compareAtPrice > (product.price || 0) && (
               <span className="ml-3 text-xl text-gray-500 line-through">
                 {product.compareAtPrice.toFixed(2)} €
               </span>
