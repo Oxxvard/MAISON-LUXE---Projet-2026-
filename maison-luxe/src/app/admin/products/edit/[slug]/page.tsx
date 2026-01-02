@@ -189,10 +189,27 @@ export default function EditProductPage() {
       });
 
       if (res.ok) {
-        const updatedProduct = await res.json();
-        // Mettre à jour l'état local avec les données du serveur
-        setProduct(updatedProduct);
-        toast.success('✓ Produit mis à jour instantanément');
+        // Attendre 500ms pour que le cache soit revalidé
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Re-fetcher les données fraîches du serveur pour s'assurer que tout est à jour
+        const refreshRes = await fetch(`/api/products/${slug}`, {
+          cache: 'no-store'
+        });
+        
+        if (refreshRes.ok) {
+          const freshData = await refreshRes.json();
+          setProduct(freshData);
+          setName(freshData.name);
+          setDescription(freshData.description);
+          setPrice(freshData.price?.toFixed(2) || '0.00');
+          setShippingCost(freshData.shippingCost?.toFixed(2) || '0.00');
+          if (Array.isArray(freshData.colorVariants)) {
+            setColorVariants(freshData.colorVariants);
+          }
+        }
+        
+        toast.success('✓ Produit mis à jour');
       } else {
         const error = await res.json();
         console.error('Update error:', error);
