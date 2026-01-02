@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import ProductCard from '@/components/ProductCard';
+import ProductCard from '../components/ProductCard';
 import { ArrowRight, TruckIcon, ShieldCheck, Package, Star, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
