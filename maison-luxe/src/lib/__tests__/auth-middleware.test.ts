@@ -24,10 +24,9 @@ jest.mock('@/lib/sentry', () => ({
 
 // Mock de authOptions
 jest.mock('@/lib/auth', () => ({
-  authOptions: {},
-}));
+  authOptions: {},}));
 
-const { getServerSession } = require('next-auth');
+import { getServerSession } from 'next-auth';
 
 describe('Auth Middleware Logic', () => {
   beforeEach(() => {
