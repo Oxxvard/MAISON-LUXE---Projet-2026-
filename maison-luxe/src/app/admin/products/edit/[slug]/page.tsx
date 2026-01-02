@@ -189,12 +189,15 @@ export default function EditProductPage() {
       });
 
       if (res.ok) {
-        // Attendre 500ms pour que le cache soit revalidé
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Attendre 300ms pour que la base de données soit à jour
+        await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Re-fetcher les données fraîches du serveur pour s'assurer que tout est à jour
-        const refreshRes = await fetch(`/api/products/${slug}`, {
-          cache: 'no-store'
+        // Re-fetcher les données fraîches du serveur avec un timestamp pour bypass le cache
+        const refreshRes = await fetch(`/api/products/${slug}?t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, max-age=0',
+            'Pragma': 'no-cache',
+          }
         });
         
         if (refreshRes.ok) {
