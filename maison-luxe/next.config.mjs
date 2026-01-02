@@ -3,6 +3,12 @@ const nextConfig = {
   // Fix workspace root detection
   outputFileTracingRoot: process.cwd(),
   
+  // Add explicit webpack configuration for @ alias
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.resolve.alias['@'] = require('path').join(__dirname, 'src');
+    return config;
+  },
+  
   images: {
     remotePatterns: [
       {
