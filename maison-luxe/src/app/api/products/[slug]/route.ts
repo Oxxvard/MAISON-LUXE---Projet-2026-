@@ -20,25 +20,31 @@ export async function GET(
       return sendCustomError(400, 'INVALID_SLUG', 'Slug manquant');
     }
 
-    const product = await Product.findOne({ slug })
-      .populate('category', 'name slug')
-      .lean()
-      .exec();
+    let product = await Product.findOne({ slug })
+      .populate('category', 'name slug');
 
     if (!product) {
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
     }
 
-    // Convertir les ObjectId en strings pour éviter les problèmes de sérialisation
-    const cleanedProduct = JSON.parse(JSON.stringify(product));
+    // Convertir le document Mongoose en objet JavaScript brut
+    product = product.toObject ? product.toObject() : product;
 
-    return NextResponse.json(cleanedProduct);
+    // S'assurer que les ObjectId sont convertis en strings
+    if (product._id) {
+      product._id = product._id.toString();
+    }
+    if (product.category && product.category._id) {
+      product.category._id = product.category._id.toString();
+    }
+
+    return NextResponse.json(product);
   } catch (error: any) {
     logger.error('Erreur récupération produit:', error);
-    console.error('Product API Error:', {
+    console.error('Product API Error Details:', {
       message: error?.message,
       code: error?.code,
-      stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+      stack: error?.stack?.split('\n').slice(0, 5).join('\n'),
     });
     return sendErrorResponse('INTERNALerror', 'Erreur lors de la récupération du produit');
   }
