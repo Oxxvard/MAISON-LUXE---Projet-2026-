@@ -105,7 +105,6 @@ jobs:
             console.log('PhoneInput.tsx exists:', fs.existsSync(phonePath));
           "
         working-directory: ./maison-luxe
-        working-directory: ./maison-luxe
       - name: Build
         run: npm run build
         working-directory: ./maison-luxe
