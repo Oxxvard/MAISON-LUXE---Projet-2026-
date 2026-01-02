@@ -3,7 +3,14 @@ const nextConfig = {
   // Fix workspace root detection
   outputFileTracingRoot: process.cwd(),
   
-  // Add explicit webpack configuration for @ alias
+  // Configuration Turbopack pour Next.js 16+
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    }
+  },
+  
+  // Fallback webpack pour compatibilité
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Fix @ alias resolution in CI
     const path = require('path');
