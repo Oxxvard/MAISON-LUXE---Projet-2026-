@@ -34,7 +34,7 @@ export default function EditProductPage() {
   // Mettre à jour colorVariants quand le produit est chargé
   useEffect(() => {
     if (product) {
-      setColorVariants(product.colorVariants || []);
+      setColorVariants(Array.isArray(product.colorVariants) ? product.colorVariants : []);
     }
   }, [product]);
 

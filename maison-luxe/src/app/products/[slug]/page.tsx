@@ -42,11 +42,14 @@ function stripImagesFromHtml(html?: string): string {
 
 // Détecte les variantes de couleur à partir des données DB, CJ ou du texte de description
 function extractColorOptions(product: any): Array<{ color: string; images?: string[] }> {
+  // Vérifier que product existe
+  if (!product) return [];
+
   // Priorité 1: colorVariants configurés en admin
-  if (Array.isArray(product?.colorVariants) && product.colorVariants.length > 0) {
+  if (Array.isArray(product.colorVariants) && product.colorVariants.length > 0) {
     return product.colorVariants.map((v: any) => ({
-      color: v.color,
-      images: v.images,
+      color: v.color || 'Couleur inconnue',
+      images: Array.isArray(v.images) ? v.images : [],
     }));
   }
 
@@ -83,7 +86,14 @@ function extractColorOptions(product: any): Array<{ color: string; images?: stri
     });
   }
 
-  return Array.from(colors).map((color) => ({ color }));
+  const colorArray = Array.from(colors).map((color) => ({ color }));
+  
+  // Si aucune couleur n'est trouvée, retourner une couleur par défaut
+  if (colorArray.length === 0) {
+    return [{ color: 'Standard', images: product?.images || [] }];
+  }
+  
+  return colorArray;
 }
 
 export default function ProductPage() {
@@ -116,16 +126,27 @@ export default function ProductPage() {
 
   const fetchProduct = async () => {
     try {
+      setLoading(true);
       const res = await fetch(`/api/products/${params.slug}`, {
         // Ajouter le cache pour les rechargements
         next: { revalidate: 60 }
       });
       if (res.ok) {
         const data = await res.json();
-        setProduct(data);
+        // Vérifier que le produit a les propriétés nécessaires
+        if (data && data._id) {
+          setProduct(data);
+        } else {
+          console.error('Produit mal formé:', data);
+          toast.error('Erreur: Produit mal formé');
+        }
+      } else {
+        console.error('Erreur API:', res.status, res.statusText);
+        toast.error('Produit non trouvé');
       }
     } catch (error) {
       console.error('Error fetching product:', error);
+      toast.error('Erreur de connexion');
     } finally {
       setLoading(false);
     }
