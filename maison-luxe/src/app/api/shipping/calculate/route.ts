@@ -9,8 +9,15 @@ const shippingCache = new Map<string, { data: any; expiry: number }>();
 
 // POST - Calculer les frais de livraison
 export async function POST(request: NextRequest) {
+  let items: any;
+  let country: any;
+  let postalCode: any;
+  
   try {
-    const { items, country, postalCode } = await request.json();
+    const body = await request.json();
+    items = body.items;
+    country = body.country;
+    postalCode = body.postalCode;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -236,7 +243,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(responseData);
   } catch (error: any) {
-    logger.error('❌ Calculate shipping error:', error);
+    logger.error('❌ Calculate shipping error:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+      country,
+      itemsCount: items?.length
+    });
     
       // Si erreur de rate limit, retourner des frais estimés par défaut
     if (error.message?.includes('QPS limit') || error.message?.includes('Too Many Requests')) {

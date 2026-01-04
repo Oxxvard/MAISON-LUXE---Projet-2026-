@@ -47,7 +47,8 @@ export const POST = withAuth(withBodyValidation(CheckoutSchema, async (request: 
       userId: (session.user as any).id,
       itemsCount: data.items?.length,
       hasShipping: !!data.shipping,
-      shippingData: data.shipping 
+      shippingData: data.shipping,
+      orderId: data.orderId
     });
     
     const { items, orderId, shipping } = data;
@@ -189,9 +190,20 @@ export const POST = withAuth(withBodyValidation(CheckoutSchema, async (request: 
       logger.warn('⚠️ Impossible de normaliser la commande:', (_e as any)?.message);
     }
 
+    logger.info('✅ Checkout session created:', { 
+      sessionId: checkoutSession.id,
+      orderId 
+    });
+    
     return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
   } catch (error: any) {
-    logger.error('Erreur création session Stripe:', error);
+    logger.error('❌ Erreur création session Stripe:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+      orderId: data?.orderId,
+      itemsCount: data?.items?.length
+    });
     return sendErrorResponse('INTERNALerror', error.message || 'Erreur lors de la création de la session de paiement');
   }
 }));

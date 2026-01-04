@@ -3,6 +3,8 @@ import path from 'path';
 import logger from '@/lib/logger';
 import { captureException } from '@/lib/sentry';
 import { logEvent } from '@/lib/events';
+import dbConnect from '@/lib/mongodb';
+import TokenCache from '@/models/TokenCache';
 
 // --- Types locaux pour réduire `any` ---
 interface CJOrderItem {
@@ -48,8 +50,9 @@ type OrderData = {
 type WarehouseInfo = Record<string, unknown>;
 
 // Typage générique pour les réponses CJ (les interfaces non utilisées ont été réduites)
-// Fichier de cache du token (persiste entre redémarrages)
+// Fichier de cache du token (persiste entre redémarrages en DEV uniquement)
 const TOKEN_CACHE_FILE = path.join(process.cwd(), 'tmp', 'cj-token.json');
+const USE_DB_CACHE = process.env.VERCEL === '1' || process.env.USE_DB_TOKEN_CACHE === 'true';
 
 // Cache global du token (persiste entre les hot-reloads en dev)
 let globalTokenCache: {
@@ -60,7 +63,45 @@ let globalTokenCache: {
   expiry: 0,
 };
 
-// Charger le token depuis le fichier au démarrage
+// Charger le token depuis MongoDB (pour production serverless)
+async function loadTokenFromDB(): Promise<void> {
+  try {
+    await dbConnect();
+    const cached = await TokenCache.findOne({ service: 'cj' });
+    
+    if (cached && cached.expiry > Date.now()) {
+      globalTokenCache = {
+        token: cached.token,
+        expiry: cached.expiry,
+      };
+      logger.info('✅ CJ token loaded from DB', { 
+        expiresInMinutes: Math.round((cached.expiry - Date.now()) / 1000 / 60) 
+      });
+    }
+  } catch (error) {
+    logger.warn('Failed to load token from DB:', error);
+  }
+}
+
+// Sauvegarder le token dans MongoDB (pour production serverless)
+async function saveTokenToDB(token: string, expiry: number): Promise<void> {
+  try {
+    await dbConnect();
+    await TokenCache.findOneAndUpdate(
+      { service: 'cj' },
+      { 
+        token, 
+        expiry,
+      },
+      { upsert: true, new: true }
+    );
+    logger.info('✅ CJ token saved to DB');
+  } catch (error) {
+    logger.warn('Failed to save token to DB:', error);
+  }
+}
+
+// Charger le token depuis le fichier au démarrage (DEV uniquement)
 function loadTokenFromFile(): void {
   try {
     if (fs.existsSync(TOKEN_CACHE_FILE)) {
@@ -75,7 +116,7 @@ function loadTokenFromFile(): void {
   }
 }
 
-// Sauvegarder le token dans un fichier
+// Sauvegarder le token dans un fichier (DEV uniquement)
 function saveTokenToFile(token: string, expiry: number): void {
   try {
     const dir = path.dirname(TOKEN_CACHE_FILE);
@@ -88,8 +129,10 @@ function saveTokenToFile(token: string, expiry: number): void {
   }
 }
 
-// Charger le token au chargement du module
-loadTokenFromFile();
+// Charger le token au chargement du module (uniquement en DEV pour le fichier)
+if (!USE_DB_CACHE) {
+  loadTokenFromFile();
+}
 
 class CJDropshippingService {
   private apiKey: string;
@@ -111,11 +154,17 @@ class CJDropshippingService {
       logger.error('CJ_API_KEY is not configured. Set CJ_API_KEY in your environment.');
       throw new Error('CJ_API_KEY not configured');
     }
-    // Recharger le token depuis le fichier au début de chaque appel
-    // (utile si le fichier a été créé/actualisé après le démarrage du processus)
+    
+    // Recharger le token depuis la source appropriée (DB en prod, fichier en dev)
     try {
-      loadTokenFromFile();
-    } catch (e) {}
+      if (USE_DB_CACHE) {
+        await loadTokenFromDB();
+      } else {
+        loadTokenFromFile();
+      }
+    } catch (e) {
+      logger.warn('Failed to reload token from cache:', e);
+    }
 
     // Vérifier le cache global
     if (globalTokenCache.token && Date.now() < globalTokenCache.expiry) {
@@ -148,21 +197,50 @@ class CJDropshippingService {
         }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        logger.error('CJ API HTTP Error:', { 
+          status: response.status, 
+          statusText: response.statusText,
+          body: errorText,
+          apiKey: this.apiKey ? `${this.apiKey.substring(0, 8)}...` : 'MISSING'
+        });
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
       const data = await response.json();
+      
+      logger.info('CJ Auth Response:', { 
+        code: data.code, 
+        hasData: !!data.data,
+        message: data.message 
+      });
 
       if (data.code === 200 && data.data) {
-        // Sauvegarder dans le cache global ET dans un fichier
+        // Sauvegarder dans le cache global ET dans le stockage approprié
         globalTokenCache.token = data.data.accessToken;
         globalTokenCache.expiry = Date.now() + (23 * 60 * 60 * 1000); // 23 heures
         
-        saveTokenToFile(globalTokenCache.token!, globalTokenCache.expiry);
+        // Sauvegarder dans DB (production) ou fichier (dev)
+        if (USE_DB_CACHE) {
+          await saveTokenToDB(globalTokenCache.token!, globalTokenCache.expiry);
+        } else {
+          saveTokenToFile(globalTokenCache.token!, globalTokenCache.expiry);
+        }
         
-        logger.info('✅ New CJ token obtained', { expiresAt: new Date(globalTokenCache.expiry).toISOString() });
+        logger.info('✅ New CJ token obtained', { 
+          expiresAt: new Date(globalTokenCache.expiry).toISOString(),
+          storage: USE_DB_CACHE ? 'MongoDB' : 'File'
+        });
         return globalTokenCache.token!;
       }
-      throw new Error(data.message || 'Failed to get access token');
+      throw new Error(data.message || `Failed to get access token (code: ${data.code})`);
     } catch (error: any) {
-      logger.error('CJ API Authentication Error:', error);
+      logger.error('CJ API Authentication Error:', { 
+        message: error.message,
+        name: error.name,
+        stack: error.stack?.split('\n').slice(0, 3).join('\n')
+      });
       
       // Si c'est une erreur de rate limit, attendre avant de retry
       if (error.message && error.message.includes('Too Many Requests')) {
