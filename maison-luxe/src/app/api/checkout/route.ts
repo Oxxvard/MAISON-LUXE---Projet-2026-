@@ -29,9 +29,15 @@ const CheckoutSchema = z.object({
   )),
   orderId: z.string().min(1),
   shipping: z.object({
+    id: z.string().optional(),
     name: z.string(),
+    logisticName: z.string().optional(),
     price: z.number().min(0),
-    deliveryTime: z.number().positive(),
+    deliveryTime: z.union([z.number().positive(), z.string()]), // Accepte "12-20" ou nombre
+    priceCNY: z.number().optional(),
+    taxesFee: z.number().optional(),
+    clearanceFee: z.number().optional(),
+    totalFee: z.number().optional(),
   }).optional(),
 });
 
