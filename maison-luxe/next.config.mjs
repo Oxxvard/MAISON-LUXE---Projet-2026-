@@ -126,8 +126,8 @@ const nextConfig = {
                   "style-src 'self' 'unsafe-inline'",
               // Images: self, data/blob, et CDNs produits (Unsplash, CJ, AliCDN)
                   "img-src 'self' data: blob: https://images.unsplash.com https://cf.cjdropshipping.com https://oss-cf.cjdropshipping.com https://img.cjdropshipping.com https://cbu01.alicdn.com https://img.alicdn.com https://ae01.alicdn.com",
-              // Fonts (local or data URIs)
-                  "font-src 'self' data:",
+              // Fonts (local, data URIs, et CDNs externes)
+                  "font-src 'self' data: https://r2cdn.perplexity.ai",
               // XHR/fetch endpoints used by the app (Nominatim + Stripe API)
                   "connect-src 'self' https://nominatim.openstreetmap.org https://api.stripe.com",
               // Frames for Stripe Checkout

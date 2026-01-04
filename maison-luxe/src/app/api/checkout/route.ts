@@ -16,12 +16,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Schéma de validation pour checkout
 const CheckoutSchema = z.object({
   items: z.array(z.object({
-    id: z.string().or(z.object({ _id: z.string() })).optional(),
+    id: z.string().optional(),
     product: z.string().optional(),
+    name: z.string().optional(),
     quantity: z.number().int().positive(),
     price: z.number().positive(),
     image: z.string().optional(),
-  })),
+    stock: z.number().optional(),
+  }).refine(
+    (item) => item.id || item.product,
+    { message: "Chaque item doit avoir un 'id' ou 'product'" }
+  )),
   orderId: z.string().min(1),
   shipping: z.object({
     name: z.string(),

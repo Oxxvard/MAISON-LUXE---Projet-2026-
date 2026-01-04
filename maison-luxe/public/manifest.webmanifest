@@ -1,0 +1,16 @@
+{
+  "name": "Maison Luxe",
+  "short_name": "Maison Luxe",
+  "description": "Boutique de luxe en ligne - Produits haut de gamme",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
