@@ -3,13 +3,14 @@
 ![CI/CD](https://github.com/Oxxvard/Ecommerceproject2026/actions/workflows/main.yml/badge.svg)
 
 **Projet :** E-commerce Dropshipping Luxe  
-**Stack :** Next.js 16 + TypeScript + MongoDB + Stripe + CJ Dropshipping  
-**Dernière mise à jour :** 2 janvier 2026  
-**Statut :** 🚀 EN PRODUCTION - Site live sur Vercel, CI/CD opérationnelle, 98% MVP
+**Stack :** Next.js 15 + TypeScript + MongoDB + Stripe + CJ Dropshipping  
+**Dernière mise à jour :** 4 janvier 2026  
+**Statut :** 🚀 EN PRODUCTION - Site live sur Render.com, 100% MVP FONCTIONNEL
 
 **URLs Production :**
-- **Site principal :** https://maison-luxe-five.vercel.app
-- **Dashboard Vercel :** https://vercel.com/maison-luxe/maison-luxe
+- **Site principal :** https://ecommerceproject2026.onrender.com
+- **Dashboard Render :** https://dashboard.render.com
+- **Ancienne URL Vercel (deprecated) :** https://maison-luxe-five.vercel.app
 
 ---
 
