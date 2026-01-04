@@ -15,9 +15,6 @@ export async function GET(
   let slug: string = '';
   try {
     await dbConnect();
-    // Ensure Category model is registered
-    if (!Category) throw new Error('Category model not loaded');
-    
     const resolvedParams = await params;
     slug = resolvedParams.slug;
 
@@ -25,13 +22,25 @@ export async function GET(
       return sendCustomError(400, 'INVALID_SLUG', 'Slug manquant');
     }
 
+    // Ne plus utiliser populate pour éviter les erreurs serverless
     const productDoc = await Product.findOne({ slug })
-      .populate('category', 'name slug')
       .lean()
       .maxTimeMS(10000);
 
     if (!productDoc) {
       return sendCustomError(404, 'PRODUCT_NOT_FOUND', 'Produit non trouvé');
+    }
+
+    // Récupérer la catégorie manuellement si nécessaire
+    if (productDoc.category) {
+      try {
+        const category = await Category.findById(productDoc.category).lean();
+        if (category) {
+          (productDoc as any).category = { name: category.name, slug: category.slug };
+        }
+      } catch (e) {
+        // Ignorer si Category fail, retourner le produit sans
+      }
     }
 
     return NextResponse.json(productDoc);
