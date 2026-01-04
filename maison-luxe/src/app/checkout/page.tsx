@@ -341,7 +341,8 @@ export default function CheckoutPage() {
         throw new Error('Erreur lors de la création de la commande');
       }
 
-      const order = await orderRes.json();
+      const orderResponse = await orderRes.json();
+      const order = orderResponse.data; // L'API retourne { success: true, data: order }
 
       // Créer la session Stripe
       const checkoutRes = await fetch('/api/checkout', {
