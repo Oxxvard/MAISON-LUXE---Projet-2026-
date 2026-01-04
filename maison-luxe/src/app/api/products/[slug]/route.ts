@@ -3,7 +3,7 @@ import logger from '@/lib/logger';
 import { sendErrorResponse, sendCustomError } from '@/lib/errors';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
-import Category from '@/models/Category';
+import Category from '@/models/Category'; // Import nécessaire pour le populate
 import { withAdminAuth } from '@/lib/auth-middleware';
 import { withBodyValidation } from '@/lib/validation';
 import { UpdateProductSchema } from '@/lib/schemas';
@@ -15,6 +15,9 @@ export async function GET(
   let slug: string = '';
   try {
     await dbConnect();
+    // Ensure Category model is registered
+    if (!Category) throw new Error('Category model not loaded');
+    
     const resolvedParams = await params;
     slug = resolvedParams.slug;
 
