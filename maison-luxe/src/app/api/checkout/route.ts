@@ -33,7 +33,7 @@ const CheckoutSchema = z.object({
     name: z.string(),
     logisticName: z.string().optional(),
     price: z.number().min(0),
-    deliveryTime: z.union([z.string(), z.number().positive()]), // String en premier pour "12-20"
+    deliveryTime: z.any(), // Accepte n'importe quoi (string "12-20" ou number)
     priceCNY: z.number().optional(),
     taxesFee: z.number().optional(),
     clearanceFee: z.number().optional(),
