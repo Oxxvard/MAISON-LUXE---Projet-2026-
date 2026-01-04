@@ -10,8 +10,10 @@ export function withBodyValidation(schema: ZodTypeAny, handler: (request: NextRe
   return async (request: NextRequest, session: any, ctx?: any) => {
     try {
       const body = await request.json();
+      logger.info('🔍 Validating request body:', { bodyKeys: Object.keys(body), route: request.url });
       const validation = schema.safeParse(body);
       if (!validation.success) {
+        logger.error('❌ Validation failed:', validation.error.format());
         return NextResponse.json(
           errorResponse('VALIDATIONerror', 'Données invalides', validation.error.format()),
           { status: 400 }

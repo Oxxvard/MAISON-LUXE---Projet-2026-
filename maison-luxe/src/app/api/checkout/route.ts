@@ -43,6 +43,13 @@ const CheckoutSchema = z.object({
 
 export const POST = withAuth(withBodyValidation(CheckoutSchema, async (request: NextRequest, session, data) => {
   try {
+    logger.info('📦 Checkout request received:', { 
+      userId: (session.user as any).id,
+      itemsCount: data.items?.length,
+      hasShipping: !!data.shipping,
+      shippingData: data.shipping 
+    });
+    
     const { items, orderId, shipping } = data;
 
     // Sécurité: recalcul côté serveur depuis la base produits
