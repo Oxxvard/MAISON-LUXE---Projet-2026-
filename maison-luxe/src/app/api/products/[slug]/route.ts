@@ -12,9 +12,11 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  let slug: string = '';
   try {
     await dbConnect();
-    const { slug } = await params;
+    const resolvedParams = await params;
+    slug = resolvedParams.slug;
 
     if (!slug) {
       return sendCustomError(400, 'INVALID_SLUG', 'Slug manquant');
@@ -32,9 +34,10 @@ export async function GET(
     return NextResponse.json(productDoc);
   } catch (error: any) {
     logger.error('Erreur récupération produit:', {
-      slug: params,
+      slug,
       message: error?.message,
       code: error?.code,
+      stack: error?.stack?.split('\n').slice(0, 5).join('\n')
     });
     return sendErrorResponse('INTERNALerror', `Erreur API: ${error?.message?.substring(0, 100)}`);
   }
