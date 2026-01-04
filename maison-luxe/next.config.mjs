@@ -22,6 +22,7 @@ const nextConfig = {
   },
   
   images: {
+    unoptimized: true, // Désactiver l'optimisation pour éviter timeout sur Render free tier
     remotePatterns: [
       {
         protocol: 'https',
