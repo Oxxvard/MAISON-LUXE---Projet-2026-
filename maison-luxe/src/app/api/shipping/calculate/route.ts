@@ -111,12 +111,46 @@ export async function POST(request: NextRequest) {
 
     // Calculer les frais de port avec CJ
     // Note: startCountryCode devrait être le pays du warehouse CJ (généralement CN pour Chine)
-    const freightData = await cjService.calculateFreight({
-      startCountryCode: 'CN', // La plupart des produits CJ partent de Chine
-      endCountryCode: country,
-      products: cjProducts,
-      zip: postalCode,
-    });
+    let freightData;
+    try {
+      freightData = await cjService.calculateFreight({
+        startCountryCode: 'CN', // La plupart des produits CJ partent de Chine
+        endCountryCode: country,
+        products: cjProducts,
+        zip: postalCode,
+      });
+    } catch (freightError: any) {
+      logger.warn('⚠️ CJ freight calculation failed, using default estimate:', freightError.message);
+      // Retourner des frais estimés si CJ API échoue
+      return NextResponse.json({
+        success: true,
+        shippingOptions: [
+          {
+            id: 'standard',
+            name: 'Standard',
+            logisticName: 'CJ Logistics',
+            price: 0,
+            deliveryTime: '12-20',
+          },
+          {
+            id: 'express',
+            name: 'Express',
+            logisticName: 'CJ Express',
+            price: 15.99,
+            deliveryTime: '7-12',
+          }
+        ],
+        defaultShipping: {
+          id: 'standard',
+          name: 'Standard',
+          logisticName: 'CJ Logistics',
+          price: 0,
+          deliveryTime: '12-20',
+        },
+        isEstimate: true,
+        message: 'Frais de port estimés',
+      });
+    }
     // Sélectionner 2 options : Standard (économique) et Express (rapide)
     const freightArr = Array.isArray(freightData) ? freightData : [];
     const sortedByPrice = [...freightArr].sort((a: any, b: any) => (a.logisticPrice || 0) - (b.logisticPrice || 0));
