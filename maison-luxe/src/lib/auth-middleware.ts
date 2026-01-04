@@ -29,12 +29,22 @@ export async function requireAuth(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
+    logger.warn('🔒 Auth failed - no session', { 
+      url: request.url,
+      hasSession: !!session,
+      hasUser: !!session?.user
+    });
     return NextResponse.json(
       errorResponse('UNAUTHORIZED', 'Non authentifié'),
       { status: 401 }
     );
   }
 
+  logger.info('✅ Auth successful', { 
+    userId: (session.user as any).id,
+    email: session.user.email 
+  });
+  
   return { session: session as any as SecureSession };
 }
 
