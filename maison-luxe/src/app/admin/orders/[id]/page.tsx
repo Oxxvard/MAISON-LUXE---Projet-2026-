@@ -28,8 +28,9 @@ export default function AdminOrderDetailPage() {
     try {
       const res = await fetch(`/api/orders/${orderId}`);
       if (res.ok) {
-        const data = await res.json();
-        setOrder(data);
+        const response = await res.json();
+        // L'API retourne { success: true, data: {...} }
+        setOrder(response.data || response);
       } else {
         toast.error('Commande non trouvée');
         router.push('/admin/orders');

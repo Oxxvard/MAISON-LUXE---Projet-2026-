@@ -24,8 +24,9 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch('/api/orders');
       if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
+        const response = await res.json();
+        // L'API retourne { success: true, data: [...] }
+        setOrders(response.data || response || []);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);

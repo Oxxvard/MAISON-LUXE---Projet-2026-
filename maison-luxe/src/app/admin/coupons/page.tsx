@@ -25,8 +25,9 @@ export default function CouponsPage() {
     try {
       const res = await fetch('/api/admin/coupons', { cache: 'no-store' });
       if (res.ok) {
-        const data = await res.json();
-        setCoupons(data);
+        const response = await res.json();
+        // L'API retourne { success: true, data: [...] }
+        setCoupons(response.data || response || []);
       }
     } catch (error) {
       console.error('Error fetching coupons:', error);

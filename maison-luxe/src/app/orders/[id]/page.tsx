@@ -27,8 +27,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch(`/api/orders/${resolvedParams.id}`);
       if (!res.ok) throw new Error('Commande non trouvée');
-      const data = await res.json();
-      setOrder(data);
+      const response = await res.json();
+      // L'API retourne { success: true, data: {...} }
+      setOrder(response.data || response);
     } catch (error) {
       console.error('Error fetching order:', error);
       toast.error('Erreur lors du chargement de la commande');

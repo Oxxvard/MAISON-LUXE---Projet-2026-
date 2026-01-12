@@ -24,8 +24,9 @@ export default function OrdersPage() {
     try {
       const res = await fetch('/api/orders');
       if (!res.ok) throw new Error('Erreur lors du chargement des commandes');
-      const data = await res.json();
-      setOrders(data);
+      const response = await res.json();
+      // L'API retourne { success: true, data: [...] }
+      setOrders(response.data || response || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
