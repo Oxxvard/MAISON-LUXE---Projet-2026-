@@ -23,7 +23,6 @@ const TokenCacheSchema = new Schema<ITokenCache>(
     expiry: {
       type: Number,
       required: true,
-      index: true,
     },
   },
   {
