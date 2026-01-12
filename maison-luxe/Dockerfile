@@ -46,7 +46,8 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/package*.json ./
 
 # Définir les variables d'environnement
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    HOSTNAME="0.0.0.0"
 
 # Changer le propriétaire des fichiers
 RUN chown -R nextjs:nodejs /app
@@ -57,5 +58,6 @@ USER nextjs
 # Exposer le port (Render utilise PORT env var, par défaut 10000)
 EXPOSE 3000
 
-# Commande de démarrage
+# Commande de démarrage Next.js standalone
+# Next.js standalone place server.js dans le dossier standalone
 CMD ["node", "server.js"]
