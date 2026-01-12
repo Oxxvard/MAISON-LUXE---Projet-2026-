@@ -3,6 +3,9 @@ const nextConfig = {
   // Fix workspace root detection
   outputFileTracingRoot: process.cwd(),
   
+  // Mode standalone pour Docker
+  output: 'standalone',
+  
   // Configuration Turbopack pour Next.js 16+
   turbopack: {
     resolveAlias: {

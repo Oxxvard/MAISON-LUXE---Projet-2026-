@@ -1,0 +1,116 @@
+version: '3.9'
+
+services:
+  # ================================
+  # MongoDB - Base de données
+  # ================================
+  mongodb:
+    image: mongo:7
+    container_name: maisonluxe-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: maisonluxe
+    volumes:
+      - mongodb_data_dev:/data/db
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - maisonluxe-network-dev
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ================================
+  # Application Next.js (Dev Mode)
+  # ================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: maisonluxe-app-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # MongoDB local
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/maisonluxe?authSource=admin
+      
+      # NextAuth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      
+      # Google OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # Stripe
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      
+      # CJ Dropshipping
+      CJ_API_URL: ${CJ_API_URL:-https://developers.cjdropshipping.com}
+      CJ_ACCESS_TOKEN: ${CJ_ACCESS_TOKEN}
+      
+      # Resend Email
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-"Maison Luxe <onboarding@resend.dev>"}
+      
+      # Admin
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@maisonluxe.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin123!}
+      
+      # Sentry (optionnel)
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN:-}
+      
+      # Base URL
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+      
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - maisonluxe-network-dev
+    volumes:
+      # Hot reload - monte le code source
+      - .:/app
+      # Exclure node_modules et .next du volume (utilise ceux du conteneur)
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+  # ================================
+  # Redis - Cache (optionnel)
+  # ================================
+  redis:
+    image: redis:7-alpine
+    container_name: maisonluxe-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - maisonluxe-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  maisonluxe-network-dev:
+    driver: bridge
+
+volumes:
+  mongodb_data_dev:
+  redis_data_dev:
