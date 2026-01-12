@@ -47,7 +47,6 @@ COPY --from=builder /app/package*.json ./
 
 # Définir les variables d'environnement
 ENV NODE_ENV=production
-ENV PORT=3000
 
 # Changer le propriétaire des fichiers
 RUN chown -R nextjs:nodejs /app
@@ -55,7 +54,7 @@ RUN chown -R nextjs:nodejs /app
 # Utiliser l'utilisateur non-root
 USER nextjs
 
-# Exposer le port
+# Exposer le port (Render utilise PORT env var, par défaut 10000)
 EXPOSE 3000
 
 # Commande de démarrage
