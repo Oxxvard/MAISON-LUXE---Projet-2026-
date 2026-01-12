@@ -121,6 +121,35 @@ export const emailService = {
       throw error;
     }
   },
+
+  /**
+   * Envoyer un email de réinitialisation de mot de passe
+   */
+  async sendPasswordReset(email: string, data: { name: string; resetUrl: string }) {
+    try {
+      const { data: emailData, error } = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: [email],
+        subject: '🔒 Réinitialisation de votre mot de passe',
+        html: generatePasswordResetHTML(data.name, data.resetUrl),
+      });
+
+      if (error) {
+        logger.error('❌ Erreur envoi email reset:', error);
+        captureException(error, { func: 'sendPasswordReset', email });
+        try { logErrorEvent('email.password_reset.failed', error, { to: email }); } catch (e) {}
+        throw error;
+      }
+
+      logger.info('✅ Email reset envoyé', { id: emailData?.id, to: email });
+      try { logEvent('email.password_reset.sent', { to: email, messageId: emailData?.id }); } catch (e) {}
+      return emailData;
+    } catch (error) {
+      logger.error('❌ Erreur sendPasswordReset:', error);
+      captureException(error, { func: 'sendPasswordReset', email });
+      throw error;
+    }
+  },
 };
 
 /**
@@ -431,4 +460,68 @@ function generateDeliveryConfirmationHTML(order: OrderEmail): string {
 </body>
 </html>
   `;
+}
+
+
+/**
+ * Template HTML pour email de réinitialisation de mot de passe
+ */
+function generatePasswordResetHTML(name: string, resetUrl: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réinitialisation de mot de passe</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🔒</div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px;">Réinitialisation de mot de passe</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px;">
+              <p style="margin: 0 0 20px; font-size: 16px; color: #333;">
+                Bonjour <strong>${name}</strong>,
+              </p>
+              <p style="margin: 0 0 30px; font-size: 16px; color: #666;">
+                Nous avons reçu une demande de réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :
+              </p>
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${resetUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                  Réinitialiser mon mot de passe
+                </a>
+              </div>
+              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <p style="margin: 0 0 10px; font-size: 14px; color: #92400e; font-weight: bold;">⚠️ Important</p>
+                <p style="margin: 0; font-size: 14px; color: #92400e;">
+                  Ce lien est valable pendant 1 heure. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
+                </p>
+              </div>
+              <p style="margin: 0 0 10px; font-size: 14px; color: #666;">
+                Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
+              </p>
+              <p style="margin: 0; font-size: 14px; color: #667eea; word-break: break-all;">${resetUrl}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+              <p style="margin: 0; font-size: 14px; color: #666;">Maison Luxe - Votre boutique de produits de luxe</p>
+              <p style="margin: 10px 0 0; font-size: 12px; color: #999;">Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  \`;
 }
