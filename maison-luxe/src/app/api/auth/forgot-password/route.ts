@@ -11,15 +11,20 @@ import { emailService } from '@/lib/email';
 
 export const POST = withBodyValidation(ForgotPasswordSchema, async (
   request: NextRequest,
-  data
+  session: any,
+  data: any
 ) => {
   try {
+    logger.info('Début forgot-password', { email: data?.email });
     await dbConnect();
+    logger.info('DB connectée');
 
     const { email } = data;
 
     // Trouver l'utilisateur
+    logger.info('Recherche utilisateur', { email: email.toLowerCase() });
     const user = await User.findOne({ email: email.toLowerCase() });
+    logger.info('Utilisateur trouvé', { found: !!user });
 
     // Pour des raisons de sécurité, toujours retourner le même message
     // même si l'utilisateur n'existe pas (éviter l'énumération d'emails)
@@ -43,19 +48,24 @@ export const POST = withBodyValidation(ForgotPasswordSchema, async (
     }
 
     // Générer un token sécurisé
+    logger.info('Génération du token');
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    logger.info('Token généré', { tokenLength: resetToken.length });
 
     // Créer l'entrée de reset (expire dans 1 heure)
-    await PasswordReset.create({
+    logger.info('Création du PasswordReset en DB');
+    const resetDoc = await PasswordReset.create({
       userId: user._id,
       token: hashedToken,
       expiresAt: new Date(Date.now() + 3600000), // 1 heure
       used: false,
     });
+    logger.info('PasswordReset créé', { id: resetDoc._id });
 
     // Construire le lien de reset
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password/${resetToken}`;
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const resetUrl = `${baseUrl.replace(/\/$/, '')}/auth/reset-password/${resetToken}`;
 
     // Envoyer l'email
     try {
@@ -82,7 +92,12 @@ export const POST = withBodyValidation(ForgotPasswordSchema, async (
       })
     );
   } catch (error: any) {
-    logger.error('Erreur forgot-password:', error);
+    logger.error('Erreur forgot-password:', { 
+      message: error?.message, 
+      stack: error?.stack,
+      name: error?.name,
+      code: error?.code 
+    });
     return sendErrorResponse('INTERNALerror', 'Erreur lors de la demande de réinitialisation');
   }
 });

@@ -11,15 +11,18 @@ import bcrypt from 'bcryptjs';
 
 export const POST = withBodyValidation(ResetPasswordSchema, async (
   request: NextRequest,
-  data
+  session: any,
+  data: any
 ) => {
   try {
+    logger.info('Début reset-password', { tokenLength: data?.token?.length });
     await dbConnect();
 
     const { token, password } = data;
 
     // Hasher le token reçu pour le comparer avec celui en DB
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    logger.info('Token hashé pour recherche');
 
     // Trouver le token de reset
     const resetEntry = await PasswordReset.findOne({
@@ -68,7 +71,11 @@ export const POST = withBodyValidation(ResetPasswordSchema, async (
       })
     );
   } catch (error: any) {
-    logger.error('Erreur reset-password:', error);
+    logger.error('Erreur reset-password:', { 
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack
+    });
     return sendErrorResponse('INTERNALerror', 'Erreur lors de la réinitialisation du mot de passe');
   }
 });

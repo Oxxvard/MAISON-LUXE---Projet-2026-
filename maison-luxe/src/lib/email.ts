@@ -523,5 +523,5 @@ function generatePasswordResetHTML(name: string, resetUrl: string): string {
   </table>
 </body>
 </html>
-  \`;
+  `;
 }
