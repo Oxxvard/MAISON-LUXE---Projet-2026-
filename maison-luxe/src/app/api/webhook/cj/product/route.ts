@@ -27,20 +27,17 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
 
-    // Structure attendue
+    // CJ envoie les données dans body.params
+    const params = body.params || {};
     const {
-      productId,         // CJ Product ID
-      vid,               // Variant ID
-      sku,               // SKU
+      pid: productId,    // CJ Product ID
+      productSku: sku,   // SKU
       productName,       // Nouveau nom
-      sellPrice,         // Nouveau prix de vente
+      productSellPrice: sellPrice,  // Nouveau prix de vente
       productImage,      // Nouvelle image principale
-      variants,          // Nouvelles variantes
-      description,       // Nouvelle description
-      discontinued,      // Boolean: produit arrêté
-      updateType,        // Type de mise à jour: PRICE, IMAGE, INFO, DISCONTINUED
-      updateTime,        // Timestamp
-    } = body;
+      productStatus,     // Statut du produit
+      description: productDescription,  // Nouvelle description
+    } = params;
 
     // Ignorer les payloads de test/validation de CJ - [REDEPLOY]
     if (productId === 'test' || vid === 'test' || sku === 'test') {
