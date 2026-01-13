@@ -40,12 +40,12 @@ export async function POST(request: NextRequest) {
     } = params;
 
     // Ignorer les payloads de test/validation de CJ - [REDEPLOY]
-    if (productId === 'test' || vid === 'test' || sku === 'test') {
+    if (productId === 'test' || sku === 'test') {
       logger.info('✅ CJ Product Webhook validation payload acknowledged');
       return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
     }
 
-    if (!productId && !vid && !sku) {
+    if (!productId && !sku) {
       logger.warn('⚠️ Webhook product: missing identifier');
       return sendErrorResponse('MISSING_REQUIRED_FIELD', 'Missing product identifier');
     }
@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
     // Trouver le produit
     const query: any = {};
     if (productId) query['cjData.productId'] = productId;
-    else if (vid) query['cjData.vid'] = vid;
     else if (sku) query['cjData.sku'] = sku;
 
     const product = await Product.findOne(query);
