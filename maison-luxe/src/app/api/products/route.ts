@@ -22,6 +22,10 @@ export async function GET(request: Request) {
     const featured = searchParams.get('featured');
     const sort = searchParams.get('sort') || '-createdAt';
     const limit = parseInt(searchParams.get('limit') || '50');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const minRating = searchParams.get('minRating');
+    const inStock = searchParams.get('inStock');
 
     const query: any = {};
 
@@ -31,6 +35,23 @@ export async function GET(request: Request) {
 
     if (featured === 'true') {
       query.featured = true;
+    }
+
+    // Filtre prix
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+
+    // Filtre note minimale
+    if (minRating && parseFloat(minRating) > 0) {
+      query.rating = { $gte: parseFloat(minRating) };
+    }
+
+    // Filtre stock
+    if (inStock === 'true') {
+      query.stock = { $gt: 0 };
     }
 
     const products = await Product.find(query)

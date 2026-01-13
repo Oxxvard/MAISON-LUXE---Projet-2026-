@@ -4,7 +4,7 @@
 
 **Projet :** E-commerce Dropshipping Luxe  
 **Stack :** Next.js 15 + TypeScript + MongoDB + Stripe + CJ Dropshipping  
-**Dernière mise à jour :** 4 janvier 2026  
+**Dernière mise à jour :** 13 janvier 2026  
 **Statut :** 🚀 EN PRODUCTION - Site live sur Render.com, 100% MVP FONCTIONNEL
 
 **URLs Production :**
@@ -51,12 +51,21 @@ Site e-commerce complet pour le dropshipping de produits de luxe chinois via CJ 
 
 ### 🛍️ E-commerce (Fonctionnel)
 - ✅ **Catalogue produits** - Affichage, filtrage, recherche
+- ✅ **Filtres avancés** - Prix (range), Notes (étoiles), Stock, Catégories
 - ✅ **Pages produits** - Images, descriptions, avis clients
 - ✅ **Panier** - Gestion quantités, persistance localStorage
 - ✅ **Checkout Stripe** - Paiement sécurisé avec webhook
 - ✅ **Gestion commandes** - Suivi statuts, historique
 - ✅ **Système d'avis** - Notes et commentaires clients
 - ✅ **Catégories** - 10 catégories luxe pré-configurées
+
+**Nouveaux filtres (13 janvier 2026) :**
+- Filtre prix avec double range slider (min/max dynamique)
+- Filtre notes minimum (1-4 étoiles)
+- Filtre stock disponible uniquement
+- Badge compteur de filtres actifs (mobile)
+- Bouton réinitialiser tous les filtres
+- 📄 Voir [FILTRES_AVANCES.md](./FILTRES_AVANCES.md) pour documentation complète
 
 ### 📦 CJ Dropshipping (Opérationnel)
 - ✅ **Interface d'import** - `/admin/cj-import` fonctionnelle

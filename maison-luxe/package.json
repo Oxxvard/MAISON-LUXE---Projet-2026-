@@ -11,6 +11,8 @@
     "check:auth": "node scripts/check-auth-coverage.js",
     "seed": "node scripts/seed-data.js",
     "create-admin": "node scripts/create-admin.js",
+    "create-indexes": "node scripts/create-product-indexes.js",
+    "test-filters": "node scripts/test-filters.js",
     "check-health": "node scripts/check-health.js",
     "warmup": "node scripts/warmup-cache.js",
     "test": "jest --runInBand",
