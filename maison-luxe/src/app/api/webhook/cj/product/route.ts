@@ -87,12 +87,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Mettre à jour la description si fournie
-    if (description) {
-      updates.description = description;
+    if (productDescription) {
+      updates.description = productDescription;
     }
 
     // Marquer comme discontinué
-    if (discontinued === true) {
+    if (productStatus === '2' || productStatus === '3') {
       updates.inStock = false;
       updates.stock = 0;
       logger.info(`⚠️ Product ${product.name} discontinued by CJ`);
@@ -104,11 +104,6 @@ export async function POST(request: NextRequest) {
     }
 
     updates['cjData.lastProductUpdate'] = new Date();
-    updates['cjData.updateType'] = updateType;
-
-    if (variants) {
-      updates['cjData.variants'] = variants;
-    }
 
     // Appliquer les mises à jour
     await Product.updateOne({ _id: product._id }, { $set: updates });
@@ -116,7 +111,7 @@ export async function POST(request: NextRequest) {
     const elapsed = Date.now() - startTime;
     logger.info(`✅ Product ${product._id} updated (${elapsed}ms)`);
 
-    return NextResponse.json(successResponse({ productId: product._id, updateType, processingTime: elapsed }));
+    return NextResponse.json(successResponse({ productId: product._id, processingTime: elapsed }));
   } catch (error: any) {
     const elapsed = Date.now() - startTime;
     logger.error('❌ CJ Product Webhook Error:', error);
