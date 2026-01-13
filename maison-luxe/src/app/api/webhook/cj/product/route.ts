@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       updateTime,        // Timestamp
     } = body;
 
-    // Ignorer les payloads de test/validation de CJ
+    // Ignorer les payloads de test/validation de CJ - [REDEPLOY]
     if (productId === 'test' || vid === 'test' || sku === 'test') {
       logger.info('✅ CJ Product Webhook validation payload acknowledged');
       return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
