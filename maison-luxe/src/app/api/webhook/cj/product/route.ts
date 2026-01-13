@@ -42,6 +42,12 @@ export async function POST(request: NextRequest) {
       updateTime,        // Timestamp
     } = body;
 
+    // Ignorer les payloads de test/validation de CJ
+    if (productId === 'test' || vid === 'test' || sku === 'test') {
+      logger.info('✅ CJ Product Webhook validation payload acknowledged');
+      return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
+    }
+
     if (!productId && !vid && !sku) {
       logger.warn('⚠️ Webhook product: missing identifier');
       return sendErrorResponse('MISSING_REQUIRED_FIELD', 'Missing product identifier');

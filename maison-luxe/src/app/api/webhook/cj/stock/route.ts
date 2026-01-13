@@ -24,6 +24,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     logger.info('📊 CJ Stock Webhook received:', JSON.stringify(body, null, 2));
 
+    // Ignorer les payloads de test/validation de CJ
+    if (body.vid === 'test' || body.sku === 'test' || body.productId === 'test') {
+      logger.info('✅ CJ Stock Webhook validation payload acknowledged');
+      return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
+    }
+
     const parsed = CJStockWebhookSchema.safeParse(body);
     if (!parsed.success) {
       logger.warn('⚠️ CJ Stock Webhook: payload validation failed', { errors: parsed.error.format() });

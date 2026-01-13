@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     logger.info('📦 CJ Order Webhook received:', JSON.stringify(body, null, 2));
 
+    // Ignorer les payloads de test/validation de CJ
+    if (body.orderId === 'test' || body.orderNumber === 'test') {
+      logger.info('✅ CJ Order Webhook validation payload acknowledged');
+      return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
+    }
+
     // Validation légère du payload entrante
     const parsed = CJOrderWebhookSchema.safeParse(body);
     if (!parsed.success) {

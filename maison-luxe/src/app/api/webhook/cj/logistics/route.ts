@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     logger.info('🚚 CJ Logistics Webhook received:', JSON.stringify(body, null, 2));
 
+    // Ignorer les payloads de test/validation de CJ
+    if (body.trackingNumber === 'test' || body.orderId === 'test') {
+      logger.info('✅ CJ Logistics Webhook validation payload acknowledged');
+      return NextResponse.json(successResponse({ message: 'Webhook validation successful' }), { status: 200 });
+    }
+
     const parsed = CJLogisticsWebhookSchema.safeParse(body);
     if (!parsed.success) {
       logger.warn('⚠️ CJ Logistics Webhook: payload validation failed', { errors: parsed.error.format() });
